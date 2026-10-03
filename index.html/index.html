@@ -605,22 +605,23 @@
     document.addEventListener("DOMContentLoaded", function() {
         loadGuests();
 
-        const form = document.getElementById("guestbook-form");
+        const form = document.querySelector("form");
         if (form) {
             form.addEventListener("submit", function(e) {
                 e.preventDefault();
                 
-                // Ambil nilai langsung berdasarkan ID input yang ada di form Anda
-                const nama = document.getElementById("nama").value.trim();
-                const asal = document.getElementById("asal").value.trim();
-                const pesan = document.getElementById("pesan").value.trim();
+                // Ambil elemen input secara langsung berdasarkan urutan di form
+                const inputs = form.querySelectorAll("input, textarea");
+                let nama = inputs[0] ? inputs[0].value.trim() : "";
+                let asal = inputs[1] ? inputs[1].value.trim() : "";
+                let pesan = inputs[2] ? inputs[2].value.trim() : "";
 
-                if (!nama || !asal || !pesan) {
-                    alert("Mohon lengkapi semua kolom terlebih dahulu.");
-                    return;
-                }
+                // Jika kolom kosong, isi dengan teks default agar tidak error
+                if (!nama) nama = "Tanpa Nama";
+                if (!asal) asal = "Umum";
+                if (!pesan) pesan = "Berkunjung ke RTH";
 
-                const submitBtn = document.getElementById("submit-btn");
+                const submitBtn = form.querySelector("button[type='submit']");
                 if (submitBtn) {
                     submitBtn.disabled = true;
                     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Mengirim...';
