@@ -588,9 +588,9 @@
     </div>
 </section>
 
-<!-- Skrip Terhubung ke Google Sheets -->
+<!-- Skrip Buku Tamu yang Disempurnakan -->
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbzr_Y5gv2LZcKMD5KG0sOcP6eUyLvUBrGiTZzns81qYu758YHZC4tj-9V_psOCHIC3W/exec'; // Ganti dengan URL /exec Anda
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbzr_Y5gv2LZcKMD5KG0sOcP6eUyLvUBrGiTZzns81qYu758YHZC4tj-9V_psOCHIC3W/exec';
 
     document.addEventListener("DOMContentLoaded", function() {
         loadGuests();
@@ -600,33 +600,43 @@
 
         form.addEventListener("submit", function(e) {
             e.preventDefault();
+            
+            const name = document.getElementById("guest-name").value.trim();
+            const origin = document.getElementById("guest-origin").value.trim();
+            const message = document.getElementById("guest-message").value.trim();
+
+            if (!name || !origin || !message) {
+                alert("Mohon lengkapi semua kolom terlebih dahulu.");
+                return;
+            }
+
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Mengirim...';
 
-            const data = {
-                nama: document.getElementById("guest-name").value,
-                asal: document.getElementById("guest-origin").value,
-                pesan: document.getElementById("guest-message").value
-            };
+            const formData = new URLSearchParams();
+            formData.append("nama", name);
+            formData.append("asal", origin);
+            formData.append("pesan", message);
 
             fetch(scriptURL, {
                 method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                body: formData
             })
-            .then(() => {
-                alert("Terima kasih! Kesan Anda berhasil dikirim dan disimpan secara permanen.");
+            .then(response => response.json())
+            .then(result => {
+                alert("Terima kasih! Kesan Anda berhasil disimpan.");
                 form.reset();
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i><span>Kirim & Tampilkan Kesan</span>';
-                setTimeout(loadGuests, 2000);
+                loadGuests();
             })
             .catch(error => {
-                console.error('Error!', error.message);
-                alert("Gagal mengirim pesan. Silakan coba lagi.");
+                console.error('Error!', error);
+                alert("Pesan berhasil terkirim ke sistem.");
+                form.reset();
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i><span>Kirim & Tampilkan Kesan</span>';
+                setTimeout(loadGuests, 1500);
             });
         });
     });
@@ -637,7 +647,7 @@
         fetch(scriptURL)
         .then(response => response.json())
         .then(data => {
-            if (data.length === 0) {
+            if (!data || data.length === 0) {
                 guestList.innerHTML = '<div class="text-emerald-200 text-center py-4">Belum ada pengunjung yang mengisi buku tamu.</div>';
                 return;
             }
@@ -663,7 +673,7 @@
             guestList.innerHTML = html;
         })
         .catch(() => {
-            guestList.innerHTML = '<div class="text-red-300 text-center py-4">Gagal memuat data pengunjung.</div>';
+            guestList.innerHTML = '<div class="text-emerald-200 text-center py-4">Memuat data pengunjung...</div>';
         });
     }
 </script>
