@@ -29,10 +29,10 @@
     max-width: 100%;
     height: auto;
   }
-  /* Mengatur form agar pas dan berada di tengah khusus pada layar HP */
+  /* Memaksa kartu pembungkus form agar pas di tengah dan tidak keluar layar di HP */
   @media (max-width: 768px) {
-    form {
-      width: 90% !important;
+    div > form, .bg-white, [class*="max-w-"] {
+      max-width: 92% !important;
       margin-left: auto !important;
       margin-right: auto !important;
       box-sizing: border-box !important;
