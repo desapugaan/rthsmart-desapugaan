@@ -22,13 +22,26 @@
         }
     </script>
     <style>
-  <style>
   html, body {
     width: 100%;
     margin: 0;
     padding: 0;
     overflow-x: hidden;
   }
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+  /* Mengatur agar bagian form dan kontainer pas di tengah layar HP */
+  @media (max-width: 768px) {
+    .max-w-7xl, .container, form {
+      width: 92% !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
+      box-sizing: border-box !important;
+    }
+  }
+</style>
   img {
     max-width: 100%;
     height: auto;
