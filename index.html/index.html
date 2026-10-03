@@ -570,22 +570,6 @@
             
             <!-- Wadah daftar pengunjung (akan diisi otomatis oleh JavaScript) -->
             <div id="guest-list" class="space-y-4">
-                <!-- Data default pertama -->
-                <div class="bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/10 flex items-start space-x-4">
-                    <div class="w-12 h-12 bg-yellow-400 text-slate-900 font-bold rounded-xl flex items-center justify-center text-xl shrink-0 shadow">
-                        SA
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center justify-between mb-1">
-                            <h4 class="font-bold text-white text-base truncate">Siti Aminah</h4>
-                            <span class="text-xs text-yellow-300 bg-yellow-400/20 px-2 py-0.5 rounded-full">Tabalong</span>
-                        </div>
-                        <p class="text-emerald-100 text-sm italic">"Tempat nongkrong baru yang asik, bersih, dan fasilitas wifi-nya sangat membantu!"</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </div>
 </section>
 
@@ -596,13 +580,11 @@
     document.addEventListener("DOMContentLoaded", function() {
         loadGuests();
 
-        // Cari form di halaman secara otomatis
         const form = document.querySelector("form");
         if (form) {
             form.addEventListener("submit", function(e) {
                 e.preventDefault();
                 
-                // Ambil semua input di dalam form secara berurutan
                 const inputs = form.querySelectorAll("input, textarea");
                 let nama = "", asal = "", pesan = "";
                 
@@ -625,7 +607,6 @@
                     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Mengirim...';
                 }
 
-                // Kirim data menggunakan metode POST fetch
                 const formData = new URLSearchParams();
                 formData.append("nama", nama);
                 formData.append("asal", asal);
@@ -634,17 +615,16 @@
                 fetch(scriptURL, {
                     method: 'POST',
                     body: formData,
-                    mode: 'no-cors' // Menghindari masalah blokir keamanan browser
+                    mode: 'no-cors'
                 })
                 .then(() => {
-                    alert("Terima kasih! Pesan dan kesan Anda berhasil dikirim.");
+                    alert("Terima kasih! Kesan Anda berhasil dikirim.");
                     form.reset();
                     if (submitBtn) {
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i><span>Kirim & Tampilkan Kesan</span>';
                     }
-                    // Tunggu 2 detik lalu muat ulang daftar pengunjung
-                    setTimeout(loadGuests, 2000);
+                    setTimeout(loadGuests, 2500);
                 })
                 .catch(() => {
                     alert("Terima kasih! Pesan terkirim.");
@@ -653,7 +633,7 @@
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i><span>Kirim & Tampilkan Kesan</span>';
                     }
-                    setTimeout(loadGuests, 2000);
+                    setTimeout(loadGuests, 2500);
                 });
             });
         }
@@ -692,11 +672,10 @@
             guestList.innerHTML = html;
         })
         .catch(() => {
-            // Biarkan kosong atau abaikan jika gagal memuat awal
+            guestList.innerHTML = '<div class="text-emerald-200 text-center py-4">Sistem buku tamu siap menerima masukan.</div>';
         });
     }
-</script>
-    
+</script>  
 <!-- Footer / Bagian Bawah -->
     <footer class="bg-slate-950 text-white py-10 border-t border-slate-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
