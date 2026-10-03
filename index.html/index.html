@@ -610,9 +610,10 @@
             form.addEventListener("submit", function(e) {
                 e.preventDefault();
                 
-                const nama = document.getElementById("nama").value;
-                const asal = document.getElementById("asal").value;
-                const pesan = document.getElementById("pesan").value;
+                // Ambil nilai langsung berdasarkan ID input yang ada di form Anda
+                const nama = document.getElementById("nama").value.trim();
+                const asal = document.getElementById("asal").value.trim();
+                const pesan = document.getElementById("pesan").value.trim();
 
                 if (!nama || !asal || !pesan) {
                     alert("Mohon lengkapi semua kolom terlebih dahulu.");
@@ -620,8 +621,10 @@
                 }
 
                 const submitBtn = document.getElementById("submit-btn");
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Mengirim...';
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Mengirim...';
+                }
 
                 const formData = new URLSearchParams();
                 formData.append("nama", nama);
@@ -636,15 +639,19 @@
                 .then(() => {
                     alert("Terima kasih! Pesan dan kesan Anda berhasil dikirim.");
                     form.reset();
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i><span>Kirim & Tampilkan Kesan</span>';
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i><span>Kirim & Tampilkan Kesan</span>';
+                    }
                     setTimeout(loadGuests, 2000);
                 })
                 .catch(() => {
                     alert("Terima kasih! Pesan terkirim.");
                     form.reset();
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i><span>Kirim & Tampilkan Kesan</span>';
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i><span>Kirim & Tampilkan Kesan</span>';
+                    }
                     setTimeout(loadGuests, 2000);
                 });
             });
@@ -688,34 +695,6 @@
         });
     }
 </script>
-<!-- Footer / Bagian Bawah -->
-    <footer class="bg-slate-950 text-white py-10 border-t border-slate-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col items-center text-center md:flex-row md:text-left md:justify-between gap-6">
-                
-                <!-- Bagian Kiri: Logo dan Judul -->
-                <div class="flex flex-col md:flex-row items-center gap-4">
-                    <!-- Kotak Logo Lanskap yang Lebih Proporsional -->
-                    <div class="w-32 h-12 bg-slate-900 rounded-xl flex items-center justify-center overflow-hidden border border-slate-700 shadow-md p-1">
-                        <img src="logo1.jpeg" alt="Logo Tabalong Smart" class="w-full h-full object-contain">
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-base md:text-lg tracking-wide">RTH Smart Desa Pugaan</h3>
-                        <p class="text-slate-400 text-xs md:text-sm">Pemerintah Kabupaten Tabalong • Kecamatan Pugaan</p>
-                    </div>
-                </div>
-
-                <!-- Bagian Kanan: Hak Cipta -->
-                <div class="text-slate-400 text-xs md:text-sm">
-                    &copy; 2026 Desa Pugaan. Hak Cipta Dilindungi.
-                </div>
-
-            </div>
-        </div>
-    </footer>
-    <!-- JavaScript Interaktif -->
-
-    <script>
 
         // Mobile Menu Toggle
 
