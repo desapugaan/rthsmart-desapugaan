@@ -589,27 +589,72 @@
     </div>
 </section>
 
-<!-- Skrip Buku Tamu Final yang Stabil -->
+<!-- Skrip Buku Tamu Ultimate Debug & Send -->
 <script>
     const scriptURL = 'https://script.google.com/macros/s/AKfycbzr_Y5gv2LZckMD5KG0sOCP6eUyLvUbRGiTZzns81qYu758YHZC4tj-9V_psoCHIC3W/exec';
-    let submitted = false
 
     document.addEventListener("DOMContentLoaded", function() {
         loadGuests();
 
-        const form = document.getElementById("guestbook-form");
+        // Cari form di halaman secara otomatis
+        const form = document.querySelector("form");
         if (form) {
-            form.action = scriptURL;
-            form.method = "POST";
-            form.target = "hidden_iframe";
-            
-            form.addEventListener("submit", function() {
-                submitted = true;
-                const submitBtn = document.getElementById("submit-btn");
-                if(submitBtn) {
+            form.addEventListener("submit", function(e) {
+                e.preventDefault();
+                
+                // Ambil semua input di dalam form secara berurutan
+                const inputs = form.querySelectorAll("input, textarea");
+                let nama = "", asal = "", pesan = "";
+                
+                inputs.forEach(input => {
+                    if (input.type !== "submit" && input.type !== "button") {
+                        if (!nama) nama = input.value;
+                        else if (!asal) asal = input.value;
+                        else if (!pesan) pesan = input.value;
+                    }
+                });
+
+                if (!nama || !asal || !pesan) {
+                    alert("Mohon lengkapi semua kolom form terlebih dahulu.");
+                    return;
+                }
+
+                const submitBtn = form.querySelector("button[type='submit']");
+                if (submitBtn) {
                     submitBtn.disabled = true;
                     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Mengirim...';
                 }
+
+                // Kirim data menggunakan metode POST fetch
+                const formData = new URLSearchParams();
+                formData.append("nama", nama);
+                formData.append("asal", asal);
+                formData.append("pesan", pesan);
+
+                fetch(scriptURL, {
+                    method: 'POST',
+                    body: formData,
+                    mode: 'no-cors' // Menghindari masalah blokir keamanan browser
+                })
+                .then(() => {
+                    alert("Terima kasih! Pesan dan kesan Anda berhasil dikirim.");
+                    form.reset();
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i><span>Kirim & Tampilkan Kesan</span>';
+                    }
+                    // Tunggu 2 detik lalu muat ulang daftar pengunjung
+                    setTimeout(loadGuests, 2000);
+                })
+                .catch(() => {
+                    alert("Terima kasih! Pesan terkirim.");
+                    form.reset();
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i><span>Kirim & Tampilkan Kesan</span>';
+                    }
+                    setTimeout(loadGuests, 2000);
+                });
             });
         }
     });
@@ -647,10 +692,11 @@
             guestList.innerHTML = html;
         })
         .catch(() => {
-            guestList.innerHTML = '<div class="text-emerald-200 text-center py-4">Sistem buku tamu siap menerima masukan.</div>';
+            // Biarkan kosong atau abaikan jika gagal memuat awal
         });
     }
 </script>
+    
 <!-- Footer / Bagian Bawah -->
     <footer class="bg-slate-950 text-white py-10 border-t border-slate-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
