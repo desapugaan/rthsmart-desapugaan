@@ -560,7 +560,6 @@
                 </button>
             </form>
         </div>
-        <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;" onload="if(submitted){alert('Terima kasih! Kesan Anda berhasil dikirim.'); window.location.reload();}"></iframe>
 
         <!-- Daftar Pengunjung Terbaru -->
         <div>
@@ -589,39 +588,56 @@
     </div>
 </section>
 
-<!-- Skrip Buku Tamu Final yang Stabil -->
+<!-- Skrip Terhubung ke Google Sheets -->
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbzr_Y5gv2LZckMD5KG0sOCP6eUyLvUbRGiTZzns81qYu758YHZC4tj-9V_psoCHIC3W/exec';
-    let submitted = false;
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbzr_Y5gv2LZcKMD5KG0sOcP6eUyLvUBrGiTZzns81qYu758YHZC4tj-9V_psOCHIC3W/exec'; // Ganti dengan URL /exec Anda
 
     document.addEventListener("DOMContentLoaded", function() {
         loadGuests();
 
         const form = document.getElementById("guestbook-form");
-        if (form) {
-            form.action = scriptURL;
-            form.method = "POST";
-            form.target = "hidden_iframe";
-            
-            form.addEventListener("submit", function() {
-                submitted = true;
-                const submitBtn = document.getElementById("submit-btn");
-                if(submitBtn) {
-                    submitBtn.disabled = true;
-                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Mengirim...';
-                }
+        const submitBtn = document.getElementById("submit-btn");
+
+        form.addEventListener("submit", function(e) {
+            e.preventDefault();
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Mengirim...';
+
+            const data = {
+                nama: document.getElementById("guest-name").value,
+                asal: document.getElementById("guest-origin").value,
+                pesan: document.getElementById("guest-message").value
+            };
+
+            fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(() => {
+                alert("Terima kasih! Kesan Anda berhasil dikirim dan disimpan secara permanen.");
+                form.reset();
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i><span>Kirim & Tampilkan Kesan</span>';
+                setTimeout(loadGuests, 2000);
+            })
+            .catch(error => {
+                console.error('Error!', error.message);
+                alert("Gagal mengirim pesan. Silakan coba lagi.");
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i><span>Kirim & Tampilkan Kesan</span>';
             });
-        }
+        });
     });
 
     function loadGuests() {
         const guestList = document.getElementById("guest-list");
-        if (!guestList) return;
         
         fetch(scriptURL)
         .then(response => response.json())
         .then(data => {
-            if (!data || data.length === 0) {
+            if (data.length === 0) {
                 guestList.innerHTML = '<div class="text-emerald-200 text-center py-4">Belum ada pengunjung yang mengisi buku tamu.</div>';
                 return;
             }
@@ -647,10 +663,11 @@
             guestList.innerHTML = html;
         })
         .catch(() => {
-            guestList.innerHTML = '<div class="text-emerald-200 text-center py-4">Sistem buku tamu siap menerima masukan.</div>';
+            guestList.innerHTML = '<div class="text-red-300 text-center py-4">Gagal memuat data pengunjung.</div>';
         });
     }
 </script>
+
 <!-- Footer / Bagian Bawah -->
     <footer class="bg-slate-950 text-white py-10 border-t border-slate-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
