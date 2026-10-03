@@ -588,73 +588,84 @@
     </div>
 </section>
 
-<!-- Skrip JavaScript Interaktif untuk Buku Tamu -->
+<!-- Skrip Terhubung ke Google Sheets -->
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const form = document.getElementById("guestbook-form");
-        const guestList = document.getElementById("guest-list");
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbzr_Y5gv2LZcKMD5KG0sOcP6eUyLvUBrGiTZzns81qYu758YHZC4tj-9V_psOCHIC3W/exec'; // Ganti dengan URL /exec Anda
 
-        // Muat data tersimpan jika ada
-        const savedGuests = JSON.parse(localStorage.getItem("rth_guests")) || [];
-        renderGuests(savedGuests);
+    document.addEventListener("DOMContentLoaded", function() {
+        loadGuests();
+
+        const form = document.getElementById("guestbook-form");
+        const submitBtn = document.getElementById("submit-btn");
 
         form.addEventListener("submit", function(e) {
             e.preventDefault();
-            
-            const name = document.getElementById("guest-name").value;
-            const origin = document.getElementById("guest-origin").value;
-            const message = document.getElementById("guest-message").value;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Mengirim...';
 
-            const newGuest = {
-                name: name,
-                origin: origin,
-                message: message,
-                initials: name.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2)
+            const data = {
+                nama: document.getElementById("guest-name").value,
+                asal: document.getElementById("guest-origin").value,
+                pesan: document.getElementById("guest-message").value
             };
 
-            savedGuests.unshift(newGuest); // Tambah ke urutan paling atas
-            localStorage.setItem("rth_guests", JSON.stringify(savedGuests));
-            
-            renderGuests(savedGuests);
-            form.reset();
-            alert("Terima kasih! Kesan Anda berhasil dikirim dan langsung ditampilkan.");
+            fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(() => {
+                alert("Terima kasih! Kesan Anda berhasil dikirim dan disimpan secara permanen.");
+                form.reset();
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i><span>Kirim & Tampilkan Kesan</span>';
+                setTimeout(loadGuests, 2000);
+            })
+            .catch(error => {
+                console.error('Error!', error.message);
+                alert("Gagal mengirim pesan. Silakan coba lagi.");
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i><span>Kirim & Tampilkan Kesan</span>';
+            });
         });
+    });
 
-        function renderGuests(guests) {
-            let html = `
-                <div class="bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/10 flex items-start space-x-4">
-                    <div class="w-12 h-12 bg-yellow-400 text-slate-900 font-bold rounded-xl flex items-center justify-center text-xl shrink-0 shadow">
-                        SA
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center justify-between mb-1">
-                            <h4 class="font-bold text-white text-base truncate">Siti Aminah</h4>
-                            <span class="text-xs text-yellow-300 bg-yellow-400/20 px-2 py-0.5 rounded-full">Tabalong</span>
-                        </div>
-                        <p class="text-emerald-100 text-sm italic">"Tempat nongkrong baru yang asik, bersih, dan fasilitas wifi-nya sangat membantu!"</p>
-                    </div>
-                </div>
-            `;
+    function loadGuests() {
+        const guestList = document.getElementById("guest-list");
+        
+        fetch(scriptURL)
+        .then(response => response.json())
+        .then(data => {
+            if (data.length === 0) {
+                guestList.innerHTML = '<div class="text-emerald-200 text-center py-4">Belum ada pengunjung yang mengisi buku tamu.</div>';
+                return;
+            }
 
-            guests.forEach(g => {
+            let html = '';
+            data.forEach(g => {
+                let initials = g.nama ? g.nama.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2) : "TN";
                 html += `
-                    <div class="bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/10 flex items-start space-x-4 animate-fade-in">
+                    <div class="bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/10 flex items-start space-x-4">
                         <div class="w-12 h-12 bg-emerald-600 text-white font-bold rounded-xl flex items-center justify-center text-xl shrink-0 shadow">
-                            ${g.initials}
+                            ${initials}
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center justify-between mb-1">
-                                <h4 class="font-bold text-white text-base truncate">${g.name}</h4>
-                                <span class="text-xs text-yellow-300 bg-yellow-400/20 px-2 py-0.5 rounded-full">${g.origin}</span>
+                                <h4 class="font-bold text-white text-base truncate">${g.nama}</h4>
+                                <span class="text-xs text-yellow-300 bg-yellow-400/20 px-2 py-0.5 rounded-full">${g.asal}</span>
                             </div>
-                            <p class="text-emerald-100 text-sm italic">"${g.message}"</p>
+                            <p class="text-emerald-100 text-sm italic">"${g.pesan}"</p>
                         </div>
                     </div>
                 `;
             });
             guestList.innerHTML = html;
-        }
-    });
+        })
+        .catch(() => {
+            guestList.innerHTML = '<div class="text-red-300 text-center py-4">Gagal memuat data pengunjung.</div>';
+        });
+    }
 </script>
 
 <!-- Footer / Bagian Bawah -->
