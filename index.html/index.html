@@ -27,24 +27,22 @@
     margin: 0;
     padding: 0;
     overflow-x: hidden;
-    box-sizing: border-box;
-  }
-  *, *:before, *:after {
-    box-sizing: inherit;
   }
   img {
     max-width: 100%;
     height: auto;
   }
-  /* Memastikan semua kontainer utama dan form selebar layar dengan jarak aman yang pas di HP */
-  section, .container, .max-w-7xl, div {
-    max-width: 100% !important;
+  /* Mengatur pembungkus utama dan kotak putih form agar rata tengah dan pas di HP */
+  body div {
+    box-sizing: border-box;
   }
-  form {
+  /* Menargetkan card/kotak putih pembungkus form secara langsung */
+  .bg-white, form {
     width: 92% !important;
     max-width: 92% !important;
     margin-left: auto !important;
     margin-right: auto !important;
+    float: none !important;
     display: block !important;
   }
 </style>
