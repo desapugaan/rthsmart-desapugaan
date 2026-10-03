@@ -29,14 +29,12 @@
     max-width: 100%;
     height: auto;
   }
-  /* Memaksa kartu pembungkus form agar pas di tengah dan tidak keluar layar di HP */
-  @media (max-width: 768px) {
-    div > form, .bg-white, [class*="max-w-"] {
-      max-width: 92% !important;
-      margin-left: auto !important;
-      margin-right: auto !important;
-      box-sizing: border-box !important;
-    }
+  /* Mengatur form agar selalu pas di tengah dan tidak pernah terpotong, baik berdiri maupun mendatar */
+  div > form, .bg-white, [class*="max-w-"] {
+    max-width: 92% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    box-sizing: border-box !important;
   }
 </style>
 </head>
