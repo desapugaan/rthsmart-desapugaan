@@ -90,19 +90,21 @@
     </nav>
 
     <!-- Hero Section -->
-    <section id="beranda" class="relative bg-[url('gambar.jpeg')] bg-cover bg-center text-white py-12 md:py-24">
-    <!-- Lapisan transparan -->
-    <div class="absolute inset-0 bg-emerald-950/60 via-emerald-950/40 to-transparent"></div>
-    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="beranda" class="relative bg-[url('gambar.jpeg')] bg-cover bg-center text-white min-h-[85vh] flex items-end pb-12 pt-24">
+    <!-- Lapisan transparan gradasi dari bawah ke atas agar teks terbaca jelas tapi foto atasnya bersih -->
+    <div class="absolute inset-0 bg-gradient-to-t from-emerald-950/90 via-emerald-950/50 to-transparent"></div>
+    
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div class="max-w-2xl">
             <!-- Ruang Terbuka Hijau Pintar -->
             <span class="inline-block bg-emerald-500/30 border border-emerald-500/50 text-emerald-300 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider mb-2">
                 Ruang Terbuka Hijau Pintar
             </span>
-            <!-- RTH Smart Desa Pugaan -->
-            <h1 class="text-2xl md:text-5xl font-extrabold tracking-tight mb-2 leading-tight">RTH Smart Desa Pugaan</h1>
             
-            <!-- Pusat Interaksi Sosial (dibuat lebih ringkas jarak bawahnya) -->
+            <!-- RTH Smart Desa Pugaan -->
+            <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight mb-2 leading-tight">RTH Smart Desa Pugaan</h1>
+            
+            <!-- Pusat Interaksi Sosial -->
             <p class="text-emerald-100 text-sm md:text-lg text-slate-200 mb-6 font-light leading-relaxed">
                 Pusat interaksi sosial, edukasi publik, dan kawasan ramah lingkungan berbasis digital di Kabupaten Tabalong.
             </p>
@@ -119,7 +121,7 @@
             </div>
         </div>
     </div>
-</section>    
+</section> 
     <!-- Profil Singkat -->
     <section id="profil" class="py-24 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
