@@ -107,7 +107,7 @@
                         <i class="fas fa-arrow-right"></i>
                     </a>
                     <a href="#pengunjung" class="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/20 font-semibold px-7 py-4 rounded-2xl transition">
-                        Daftar Pengunjung
+                        Buku Tamu
                     </a>
                 </div>
             </div>
@@ -299,46 +299,32 @@
         </div>
     </section>
 
-    <!-- Buku Tamu & Unggah Foto Pengunjung -->
+    <!-- Buku Tamu (Google Form Callout Box & Daftar Pengunjung Terbaru) -->
     <section id="pengunjung" class="py-24 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-3xl mx-auto mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4 tracking-tight">Buku Tamu & Unggah Foto</h2>
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4 tracking-tight">Buku Tamu Pengunjung</h2>
                 <div class="w-16 h-1.5 bg-emerald-500 mx-auto rounded-full mb-5"></div>
-                <p class="text-slate-600 text-base md:text-lg">Catat kehadiran Anda dan bagikan momen seru saat berkunjung ke RTH Smart Desa Pugaan.</p>
+                <p class="text-slate-600 text-base md:text-lg">Catat kehadiran Anda dan bagikan kesan kunjungan saat berkunjung ke RTH Smart Desa Pugaan.</p>
             </div>
             
-            <div class="grid lg:grid-cols-2 gap-12 items-start">
-                <!-- Form Input -->
-                <div class="bg-slate-50 p-8 md:p-10 rounded-3xl border border-slate-200 shadow-sm">
-                    <h3 class="text-xl font-bold text-slate-900 mb-6">Form Kehadiran Pengunjung</h3>
-                    <form id="visitor-form" class="space-y-5">
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-2">Nama Lengkap</label>
-                            <input type="text" id="visitor-name" required class="w-full px-4.5 py-3.5 rounded-2xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white text-sm" placeholder="Contoh: Ahmad Fauzi">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-2">Asal / Instansi</label>
-                            <input type="text" id="visitor-origin" required class="w-full px-4.5 py-3.5 rounded-2xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white text-sm" placeholder="Contoh: Barabai / Umum">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-2">Unggah Foto Kunjungan</label>
-                            <input type="file" id="visitor-photo" accept="image/*" required class="w-full px-3 py-3 rounded-2xl border border-slate-300 bg-white text-sm file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-2">Pesan / Kesan</label>
-                            <textarea id="visitor-message" rows="3" required class="w-full px-4.5 py-3.5 rounded-2xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white text-sm" placeholder="Tempatnya nyaman dan internetnya cepat!"></textarea>
-                        </div>
-                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-4 rounded-2xl transition shadow-md shadow-emerald-900/20 text-sm">
-                            Kirim & Simpan Kehadiran
-                        </button>
-                    </form>
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <!-- Google Form Callout Box -->
+                <div class="p-10 bg-emerald-900 text-white rounded-3xl shadow-xl border border-emerald-800 text-center">
+                    <div class="w-16 h-16 bg-emerald-800 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-6 shadow-inner">
+                        <i class="fas fa-book-open text-emerald-300"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3">Isi Buku Tamu Online</h3>
+                    <p class="text-emerald-100 text-sm mb-8 leading-relaxed">Silakan isi daftar kehadiran dan unggah foto kunjungan Anda langsung melalui formulir Google Forms resmi kami:</p>
+                    <a href="https://docs.google.com/forms/d/e/1FAIpQLScon0CRBCN5uouod2SyQtYWHAWX8aGTVIFGxtVU3xa23vbABg/viewform" target="_blank" class="inline-block bg-white text-emerald-900 hover:bg-emerald-50 px-8 py-4 rounded-2xl text-sm font-bold transition shadow-lg">
+                        Buka Buku Tamu & Unggah Foto <i class="fas fa-external-link-alt ml-2"></i>
+                    </a>
                 </div>
 
-                <!-- Daftar Pengunjung Live -->
+                <!-- Daftar Pengunjung Terbaru -->
                 <div>
                     <h3 class="text-xl font-bold text-slate-900 mb-6">Pengunjung Terbaru</h3>
-                    <div id="visitor-list" class="space-y-4 max-h-[520px] overflow-y-auto pr-2">
+                    <div id="visitor-list" class="space-y-4 max-h-[400px] overflow-y-auto pr-2">
                         <div class="bg-slate-50 p-5 rounded-3xl border border-slate-200 flex items-center space-x-4 shadow-sm">
                             <div class="w-16 h-16 rounded-2xl bg-slate-200 overflow-hidden shrink-0 shadow-inner">
                                 <img src="dukumen1.jpeg" class="w-full h-full object-cover">
@@ -391,17 +377,6 @@
         </div>
     </section>
 
-    <!-- Google Form Callout Box -->
-    <div class="max-w-4xl mx-auto px-4 my-16">
-        <div class="text-center p-10 bg-emerald-900 text-white rounded-3xl shadow-xl border border-emerald-800">
-            <h2 class="text-2xl font-bold mb-3">Buku Tamu & Kritik Saran Online</h2>
-            <p class="text-emerald-100 text-sm mb-6">Silakan isi buku tamu dan unggah foto kunjungan Anda langsung melalui formulir Google Forms resmi kami:</p>
-            <a href="https://docs.google.com/forms/d/e/1FAIpQLScon0CRBCN5uouod2SyQtYWHAWX8aGTVIFGxtVU3xa23vbABg/viewform" target="_blank" class="inline-block bg-white text-emerald-900 hover:bg-emerald-50 px-8 py-4 rounded-2xl text-sm font-bold transition shadow-lg">
-                Isi Buku Tamu & Unggah Foto <i class="fas fa-external-link-alt ml-2"></i>
-            </a>
-        </div>
-    </div>
-
     <!-- Footer -->
     <footer class="bg-slate-950 text-white py-12 border-t border-slate-900">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -435,41 +410,6 @@
                 toast.classList.add('translate-y-24', 'opacity-0');
             }, 3000);
         }
-
-        // Visitor Form Handler & Image Preview
-        const visitorForm = document.getElementById('visitor-form');
-        visitorForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const name = document.getElementById('visitor-name').value;
-            const origin = document.getElementById('visitor-origin').value;
-            const message = document.getElementById('visitor-message').value;
-            const fileInput = document.getElementById('visitor-photo');
-
-            if (fileInput.files && fileInput.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const imageUrl = e.target.result;
-                    
-                    const listContainer = document.getElementById('visitor-list');
-                    const newCard = document.createElement('div');
-                    newCard.className = 'bg-slate-50 p-5 rounded-3xl border border-slate-200 flex items-center space-x-4 shadow-sm animate-fade-in';
-                    newCard.innerHTML = `
-                        <div class="w-16 h-16 rounded-2xl bg-slate-200 overflow-hidden shrink-0 shadow-inner">
-                            <img src="${imageUrl}" class="w-full h-full object-cover">
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <h4 class="font-bold text-slate-900 truncate">${name}</h4>
-                            <p class="text-xs text-emerald-700 font-semibold">${origin}</p>
-                            <p class="text-xs text-slate-600 mt-1 truncate">${message}</p>
-                        </div>
-                    `;
-                    listContainer.prepend(newCard);
-                    visitorForm.reset();
-                    showToast('Terima kasih! Kehadiran Anda berhasil dicatat.');
-                }
-                reader.readAsDataURL(fileInput.files[0]);
-            }
-        });
 
         // Feedback Form Handler
         const feedbackForm = document.getElementById('feedback-form');
