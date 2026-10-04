@@ -863,7 +863,7 @@
                     </div>
                     <textarea id="feedback-message" rows="3" required placeholder="Tuliskan saran, kritik membangun, atau ide kreatif Anda..." class="glass-input w-full px-4 py-3.5 rounded-2xl text-sm placeholder:text-slate-500"></textarea>
                     
-                    <button type="submit" class="glass-btn-primary w-full py-4 rounded-2xl font-bold text-white text-sm uppercase tracking-wider flex items-center justify-center space-x-2">
+                    <button type="submit" id="feedback-submit-btn" class="glass-btn-primary w-full py-4 rounded-2xl font-bold text-white text-sm uppercase tracking-wider flex items-center justify-center space-x-2">
                         <i class="fas fa-paper-plane"></i>
                         <span>Kirim Masukan untuk Desa</span>
                     </button>
@@ -871,6 +871,33 @@
             </div>
         </div>
     </section>
+
+<!-- Bagian Form Unggah Foto Warga -->
+<section id="upload-galeri" class="py-16 px-4 max-w-4xl mx-auto">
+    <div class="glass-panel p-8 rounded-3xl border border-white/10 bg-[#072418]/60 backdrop-blur-xl">
+        <h3 class="text-2xl font-bold text-white mb-2 text-center">📤 Unggah Foto Kegiatan RTH Smart</h3>
+        <p class="text-slate-300 text-sm text-center mb-6">Bagikan momen keseruan, pemandangan, atau aktivitas Anda di RTH Smart Desa Pugaan agar tampil di galeri.</p>
+        
+        <form id="formUploadGaleri" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-emerald-300 mb-1">Nama Pengirim</label>
+                <input type="text" id="namaPengirim" required class="w-full px-4 py-3 rounded-xl bg-emerald-950/50 border border-emerald-500/30 text-white focus:outline-none focus:border-emerald-400" placeholder="Nama Anda / Warga">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-emerald-300 mb-1">Keterangan Foto</label>
+                <input type="text" id="ketFoto" required class="w-full px-4 py-3 rounded-xl bg-emerald-950/50 border border-emerald-500/30 text-white focus:outline-none focus:border-emerald-400" placeholder="Contoh: Suasana sore di RTH Smart">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-emerald-300 mb-1">Pilih File Foto</label>
+                <input type="file" id="fileFoto" accept="image/*" required class="w-full px-4 py-3 rounded-xl bg-emerald-950/50 border border-emerald-500/30 text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-500 file:text-white hover:file:bg-emerald-600">
+            </div>
+            <button type="submit" id="btnKirim" class="w-full py-3 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white font-bold transition duration-300 shadow-lg shadow-emerald-500/20">
+                🚀 Kirim Foto ke Galeri Desa
+            </button>
+        </form>
+        <div id="statusUpload" class="mt-4 text-center text-sm font-medium"></div>
+    </div>
+</section>
 
     <!-- Footer -->
     <footer class="relative z-10 bg-nature-950/90 backdrop-blur-2xl border-t border-white/10 py-14">
@@ -1019,17 +1046,21 @@
 
                 let html = '';
                 // Render guests
-                data.slice(0, 10).forEach(g => {
+                data.slice(0, 20).forEach(g => {
                     const name = g.nama || 'Pengunjung';
                     const origin = g.asal || 'Warga';
                     const message = g.pesan || '';
                     const ratingNum = parseInt(g.rating) || 5;
-                    const stars = '⭐'.repeat(Math.min(5, Math.max(1, ratingNum)));
-                    const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) || 'TN';
+                    const isKritik = g.tipe === 'Kritik & Saran';
+                    const stars = isKritik 
+                        ? '<span class="text-cyan-300 font-medium text-xs"><i class="fas fa-comment-dots mr-1"></i>Aspirasi</span>'
+                        : '⭐'.repeat(Math.min(5, Math.max(1, ratingNum)));
+                    const initials = (name.replace(/[()]/g, '').trim().split(/\s+/).map(n => n[0]).join('') || 'W').toUpperCase().substring(0, 2);
+                    const borderCls = isKritik ? 'border-cyan-400/25' : 'border-white/10';
 
                     html += `
-                        <div class="glass-panel p-5 rounded-3xl border-white/10 flex items-start space-x-4">
-                            <div class="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-600 text-white font-extrabold rounded-2xl flex items-center justify-center text-lg shrink-0 shadow-md">
+                        <div class="glass-panel p-5 rounded-3xl ${borderCls} flex items-start space-x-4 transition hover:border-emerald-400/40">
+                            <div class="w-12 h-12 ${isKritik ? 'bg-gradient-to-br from-cyan-400 to-teal-600' : 'bg-gradient-to-br from-emerald-400 to-teal-600'} text-white font-extrabold rounded-2xl flex items-center justify-center text-lg shrink-0 shadow-md">
                                 ${initials}
                             </div>
                             <div class="flex-1 min-w-0">
@@ -1037,7 +1068,7 @@
                                     <h4 class="font-bold text-white text-base truncate">${name}</h4>
                                     <div class="flex items-center space-x-2">
                                         <span class="text-amber-400 text-xs">${stars}</span>
-                                        <span class="text-[11px] text-emerald-200 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/30">${origin}</span>
+                                        <span class="text-[11px] ${isKritik ? 'text-cyan-200 bg-cyan-500/20 border-cyan-500/30' : 'text-emerald-200 bg-emerald-500/20 border-emerald-500/30'} px-2.5 py-0.5 rounded-full border">${origin}</span>
                                     </div>
                                 </div>
                                 <p class="text-emerald-100 text-sm leading-relaxed italic">"${message}"</p>
@@ -1049,7 +1080,6 @@
             })
             .catch(() => {
                 if (refreshIcon) refreshIcon.classList.remove('fa-spin');
-                // Keep default demo data intact if offline or URL not reachable
             });
         }
 
@@ -1077,7 +1107,30 @@
                     tipe: 'Buku Tamu'
                 };
 
-                // Send to Google Apps Script endpoint
+                // Tampilkan langsung di layar secara instan
+                const initials = (name.split(/\s+/).map(n => n[0]).join('') || 'W').toUpperCase().substring(0, 2);
+                const stars = '⭐'.repeat(parseInt(rating) || 5);
+                const newCard = document.createElement('div');
+                newCard.className = "glass-panel p-5 rounded-3xl border-emerald-400/50 glow-emerald flex items-start space-x-4";
+                newCard.innerHTML = `
+                    <div class="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-600 text-white font-extrabold rounded-2xl flex items-center justify-center text-lg shrink-0 shadow-md">
+                        ${initials}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex flex-wrap items-center justify-between gap-1 mb-1">
+                            <h4 class="font-bold text-white text-base truncate">${name} <span class="text-xs text-emerald-300 font-normal">(Baru Saja)</span></h4>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-amber-400 text-xs">${stars}</span>
+                                <span class="text-[11px] text-emerald-200 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/30">${origin}</span>
+                            </div>
+                        </div>
+                        <p class="text-emerald-100 text-sm leading-relaxed italic">"${message}"</p>
+                    </div>
+                `;
+                const guestList = document.getElementById("guest-list");
+                guestList.insertBefore(newCard, guestList.firstChild);
+                newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
                 fetch(scriptURL, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -1086,33 +1139,10 @@
                 })
                 .then(() => {
                     showToast('Terima Kasih!', 'Kesan Anda berhasil dicatat dan disimpan ke Google Sheet.');
-                    
-                    // Prepend new card dynamically to guest list
-                    const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) || 'TN';
-                    const stars = '⭐'.repeat(parseInt(rating) || 5);
-                    const newCard = document.createElement('div');
-                    newCard.className = "glass-panel p-5 rounded-3xl border-emerald-400/40 glow-emerald flex items-start space-x-4";
-                    newCard.innerHTML = `
-                        <div class="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-600 text-white font-extrabold rounded-2xl flex items-center justify-center text-lg shrink-0 shadow-md">
-                            ${initials}
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex flex-wrap items-center justify-between gap-1 mb-1">
-                                <h4 class="font-bold text-white text-base truncate">${name} <span class="text-xs text-emerald-300 font-normal">(Baru Saja)</span></h4>
-                                <div class="flex items-center space-x-2">
-                                    <span class="text-amber-400 text-xs">${stars}</span>
-                                    <span class="text-[11px] text-emerald-200 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/30">${origin}</span>
-                                </div>
-                            </div>
-                            <p class="text-emerald-100 text-sm leading-relaxed italic">"${message}"</p>
-                        </div>
-                    `;
-                    const guestList = document.getElementById("guest-list");
-                    guestList.insertBefore(newCard, guestList.firstChild);
-
                     guestForm.reset();
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i><span>Kirim & Tampilkan Kesan Saya</span>';
+                    setTimeout(loadGuests, 3000);
                 })
                 .catch(err => {
                     console.error('Error submitting guestbook:', err);
@@ -1126,28 +1156,125 @@
 
         // Feedback Form Handler
         const feedbackForm = document.getElementById('feedback-form');
+        const feedbackBtn = document.getElementById('feedback-submit-btn');
+
         if (feedbackForm) {
             feedbackForm.addEventListener('submit', function(e) {
                 e.preventDefault();
-                const name = document.getElementById('feedback-name').value || 'Warga';
-                const contact = document.getElementById('feedback-contact').value || '-';
-                const message = document.getElementById('feedback-message').value;
+                const name = document.getElementById('feedback-name').value.trim() || 'Warga';
+                const contact = document.getElementById('feedback-contact').value.trim() || '-';
+                const message = document.getElementById('feedback-message').value.trim();
 
-                // Send to Google Apps Script as Kritik / Saran
+                if (feedbackBtn) {
+                    feedbackBtn.disabled = true;
+                    feedbackBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Mengirim Aspirasi...';
+                }
+
+                const payload = {
+                    nama: name + (contact !== '-' ? ' (' + contact + ')' : ''),
+                    asal: 'Kritik & Saran',
+                    rating: '5',
+                    pesan: message,
+                    tipe: 'Kritik & Saran'
+                };
+
+                // Tampilkan langsung di layar secara instan
+                const initials = (name.split(/\s+/).map(n => n[0]).join('') || 'W').toUpperCase().substring(0, 2);
+                const newCard = document.createElement('div');
+                newCard.className = "glass-panel p-5 rounded-3xl border-cyan-400/50 glow-emerald flex items-start space-x-4";
+                newCard.innerHTML = `
+                    <div class="w-12 h-12 bg-gradient-to-br from-cyan-400 to-teal-600 text-white font-extrabold rounded-2xl flex items-center justify-center text-lg shrink-0 shadow-md">
+                        ${initials}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex flex-wrap items-center justify-between gap-1 mb-1">
+                            <h4 class="font-bold text-white text-base truncate">${name} <span class="text-xs text-cyan-300 font-normal">(Baru Saja)</span></h4>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-cyan-300 font-semibold text-xs"><i class="fas fa-comment-dots mr-1"></i>Aspirasi</span>
+                                <span class="text-[11px] text-teal-200 bg-teal-500/20 px-2.5 py-0.5 rounded-full border border-teal-500/30">Kritik & Saran</span>
+                            </div>
+                        </div>
+                        <p class="text-emerald-100 text-sm leading-relaxed italic">"${message}"</p>
+                    </div>
+                `;
+                const guestList = document.getElementById("guest-list");
+                guestList.insertBefore(newCard, guestList.firstChild);
+                newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
                 fetch(scriptURL, {
                     method: 'POST',
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({
-                        nama: name + ' (Kontak: ' + contact + ')',
-                        asal: 'Kritik & Saran',
-                        pesan: message,
-                        tipe: 'Kritik & Saran'
-                    })
-                }).catch(() => {});
+                    body: JSON.stringify(payload)
+                })
+                .then(() => {
+                    showToast('Aspirasi Diterima', 'Terima kasih atas kritik dan saran Anda untuk kemajuan Desa Pugaan!');
+                    feedbackForm.reset();
+                    if (feedbackBtn) {
+                        feedbackBtn.disabled = false;
+                        feedbackBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i><span>Kirim Masukan untuk Desa</span>';
+                    }
+                    setTimeout(loadGuests, 3000);
+                })
+                .catch(() => {
+                    showToast('Aspirasi Diterima', 'Masukan Anda telah dicatat.');
+                    feedbackForm.reset();
+                    if (feedbackBtn) {
+                        feedbackBtn.disabled = false;
+                        feedbackBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i><span>Kirim Masukan untuk Desa</span>';
+                    }
+                });
+            });
+        }
 
-                feedbackForm.reset();
-                showToast('Aspirasi Diterima', 'Terima kasih atas kritik dan saran Anda untuk kemajuan Desa Pugaan!');
+        // Upload Form Handler (Foto Galeri)
+        const uploadForm = document.getElementById('formUploadGaleri');
+        if (uploadForm) {
+            uploadForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const btn = document.getElementById('btnKirim');
+                const status = document.getElementById('statusUpload');
+                const fileInput = document.getElementById('fileFoto');
+                const file = fileInput.files[0];
+
+                if (!file) return;
+
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Sedang Mengunggah Foto...';
+                status.textContent = '';
+
+                const fr = new FileReader();
+                fr.readAsDataURL(file);
+                fr.onload = function() {
+                    const obj = {
+                        nama: document.getElementById('namaPengirim').value.trim(),
+                        keterangan: document.getElementById('ketFoto').value.trim(),
+                        fileData: fr.result.split(',')[1],
+                        mimeType: file.type || 'image/jpeg',
+                        fileName: file.name
+                    };
+
+                    fetch(scriptURL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify(obj)
+                    })
+                    .then(() => {
+                        status.textContent = '✅ Foto berhasil diunggah! Masuk ke Google Drive & Database Desa.';
+                        status.className = 'mt-4 text-center text-sm font-medium text-emerald-400';
+                        showToast('Berhasil!', 'Foto Anda berhasil diunggah ke Google Drive.');
+                        uploadForm.reset();
+                        btn.disabled = false;
+                        btn.innerHTML = '🚀 Kirim Foto ke Galeri Desa';
+                    })
+                    .catch(() => {
+                        status.textContent = '❌ Gagal mengunggah foto. Silakan coba lagi.';
+                        status.className = 'mt-4 text-center text-sm font-medium text-red-400';
+                        btn.disabled = false;
+                        btn.innerHTML = '🚀 Kirim Foto ke Galeri Desa';
+                    });
+                };
             });
         }
 
