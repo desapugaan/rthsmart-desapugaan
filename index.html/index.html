@@ -590,20 +590,25 @@
 
 <!-- Skrip Terhubung ke Google Sheets -->
 <script>
-    const scriptURL = '"https://script.google.com/macros/s/AKfycbxedQqkQfOHKbKh-MCxOTV5_iAaih2JcS6dxuzRS0tfeBlGC8HJkzmwi2BjkffAIW2L4w/exec"; // Ganti dengan URL /exec Anda
+    const scriptURL = "https://script.google.com/macros/s/AKfycbxedQqkQfOHKbKh-MCxOTV5_iAaih2JcS6dxuzRS0tfeBlGC8HJkzmwi2BjkffAIW2L4w/exec";
 
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function () {
         loadGuests();
 
         const form = document.getElementById("guestbook-form");
-        const submitBtn = document.getElementById("submit-btn");
 
-        form.addEventListener("submit", function(e) {
+        form.addEventListener("submit", function (e) {
             e.preventDefault();
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Mengirim...';
 
-            const data = {
+            const submitBtn = form.querySelector("button[type='submit']") || form.querySelector("button");
+            const originalText = submitBtn ? submitBtn.innerHTML : "";
+            
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Mengirim...';
+            }
+
+            const requestData = {
                 nama: document.getElementById("guest-name").value,
                 asal: document.getElementById("guest-origin").value,
                 pesan: document.getElementById("guest-message").value
@@ -613,58 +618,69 @@
                 method: 'POST',
                 mode: 'no-cors',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                body: JSON.stringify(requestData)
             })
             .then(() => {
-                alert("Terima kasih! Kesan Anda berhasil dikirim dan disimpan secara permanen.");
+                alert('Terima kasih! Pesan Anda berhasil dikirim.');
                 form.reset();
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i><span>Kirim & Tampilkan Kesan</span>';
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
                 setTimeout(loadGuests, 2000);
             })
             .catch(error => {
                 console.error('Error!', error.message);
-                alert("Gagal mengirim pesan. Silakan coba lagi.");
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i><span>Kirim & Tampilkan Kesan</span>';
+                alert('Gagal mengirim pesan. Silakan coba lagi.');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
             });
         });
     });
 
     function loadGuests() {
         const guestList = document.getElementById("guest-list");
-        
-        fetch(scriptURL)
-        .then(response => response.json())
-        .then(data => {
-            if (data.length === 0) {
-                guestList.innerHTML = '<div class="text-emerald-200 text-center py-4">Belum ada pengunjung yang mengisi buku tamu.</div>';
-                return;
-            }
+        if (!guestList) return;
 
-            let html = '';
-            data.forEach(g => {
-                let initials = g.nama ? g.nama.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2) : "TN";
-                html += `
-                    <div class="bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/10 flex items-start space-x-4">
-                        <div class="w-12 h-12 bg-emerald-600 text-white font-bold rounded-xl flex items-center justify-center text-xl shrink-0 shadow">
-                            ${initials}
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center justify-between mb-1">
-                                <h4 class="font-bold text-white text-base truncate">${g.nama}</h4>
-                                <span class="text-xs text-yellow-300 bg-yellow-400/20 px-2 py-0.5 rounded-full">${g.asal}</span>
+        fetch(scriptURL)
+            .then(response => response.json())
+            .then(data => {
+                if (!data || data.length === 0) {
+                    guestList.innerHTML = '<div class="text-emerald-200 text-center py-4">Belum ada pengunjung yang mengisi buku tamu.</div>';
+                    return;
+                }
+
+                let html = '';
+                data.forEach(g => {
+                    let initials = g.nama ? g.nama.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2) : "TN";
+                    html += `
+                        <div class="bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/10 flex items-start space-x-4 mb-3">
+                            <div class="w-12 h-12 bg-emerald-600 text-white font-bold rounded-xl flex items-center justify-center text-xl shrink-0 shadow">
+                                ${initials}
                             </div>
-                            <p class="text-emerald-100 text-sm italic">"${g.pesan}"</p>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between mb-1">
+                                    <h4 class="font-bold text-white text-base truncate">${escapeHtml(g.nama)}</h4>
+                                    <span class="text-xs text-yellow-300 bg-yellow-400/20 px-2 py-0.5 rounded-full">${escapeHtml(g.asal)}</span>
+                                </div>
+                                <p class="text-emerald-100 text-sm italic">"${escapeHtml(g.pesan)}"</p>
+                            </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                });
+                guestList.innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Gagal memuat data:', error);
+                guestList.innerHTML = '<div class="text-red-300 text-center py-4">Gagal memuat data pengunjung.</div>';
             });
-            guestList.innerHTML = html;
-        })
-        .catch(() => {
-            guestList.innerHTML = '<div class="text-red-300 text-center py-4">Gagal memuat data pengunjung.</div>';
-        });
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 </script>
 
