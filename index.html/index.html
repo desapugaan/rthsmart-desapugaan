@@ -538,7 +538,7 @@
                 <i class="fas fa-book-open mr-2 text-yellow-500"></i> Form Buku Tamu Online
             </h3>
             
-            <form id="guestbook-form" class="space-y-5">
+            <form onsubmit="event.preventDefault(); kirimBukuTamu();" class="space-y-5">
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-2">Nama Lengkap</label>
                     <input type="text" id="guest-name" required placeholder="Contoh: Ahmad Fauzi" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-slate-800">
@@ -581,7 +581,7 @@
     document.addEventListener("DOMContentLoaded", function () {
         loadGuests();
 
-        const form = document.querySelector("form");
+        const form = document.getElementById("guestbook-form");
         if (form) {
             form.addEventListener("submit", function (e) {
                 e.preventDefault();
@@ -594,12 +594,10 @@
                     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Mengirim...';
                 }
 
-                // Mengambil nilai berdasarkan ID yang ada di form HTML Anda
-                const inputs = form.querySelectorAll("input, textarea");
                 const requestData = {
-                    nama: inputs[0] ? inputs[0].value : "",
-                    asal: inputs[1] ? inputs[1].value : "",
-                    pesan: inputs[2] ? inputs[2].value : ""
+                    nama: document.getElementById("guest-name").value,
+                    asal: document.getElementById("guest-origin").value,
+                    pesan: document.getElementById("guest-message").value
                 };
 
                 fetch(scriptURL, {
