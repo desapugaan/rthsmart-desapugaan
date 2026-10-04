@@ -854,37 +854,10 @@
 
                 <!-- Wadah List Pengunjung -->
                 <div id="guest-list" class="space-y-4">
-                    <!-- Default cards while loading or if offline -->
-                    <div class="glass-panel p-5 rounded-3xl border-white/10 flex items-start space-x-4">
-                        <div class="w-12 h-12 bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 font-extrabold rounded-2xl flex items-center justify-center text-lg shrink-0 shadow-md">
-                            SA
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex flex-wrap items-center justify-between gap-1 mb-1">
-                                <h4 class="font-bold text-white text-base">Siti Aminah</h4>
-                                <div class="flex items-center space-x-2">
-                                    <span class="text-amber-400 text-xs">⭐⭐⭐⭐⭐</span>
-                                    <span class="text-[11px] text-amber-200 bg-amber-400/20 px-2.5 py-0.5 rounded-full border border-amber-400/30">Tabalong</span>
-                                </div>
-                            </div>
-                            <p class="text-emerald-100 text-sm leading-relaxed italic">"Tempat nongkrong baru yang asik, bersih, adem dan fasilitas wifi-nya sangat membantu buat belajar dan ngerjain tugas!"</p>
-                        </div>
-                    </div>
-
-                    <div class="glass-panel p-5 rounded-3xl border-white/10 flex items-start space-x-4">
-                        <div class="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-600 text-white font-extrabold rounded-2xl flex items-center justify-center text-lg shrink-0 shadow-md">
-                            AF
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex flex-wrap items-center justify-between gap-1 mb-1">
-                                <h4 class="font-bold text-white text-base">Ahmad Fauzi</h4>
-                                <div class="flex items-center space-x-2">
-                                    <span class="text-amber-400 text-xs">⭐⭐⭐⭐⭐</span>
-                                    <span class="text-[11px] text-emerald-200 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/30">Warga Sekitar</span>
-                                </div>
-                            </div>
-                            <p class="text-emerald-100 text-sm leading-relaxed italic">"Taman bermainnya ramah anak banget, sore-sore bawa anak main ke sini sambil ngopi di BUMDes rasanya mantap."</p>
-                        </div>
+                    <div id="guest-empty-placeholder" class="glass-panel p-8 rounded-3xl border-white/10 text-center text-slate-400 text-sm">
+                        <i class="fas fa-comments text-3xl text-sky-400/50 mb-3 block"></i>
+                        <p class="font-semibold text-white mb-1">Belum Ada Kesan Pengunjung</p>
+                        <p class="text-xs text-slate-400">Jadilah yang pertama menuliskan pengalaman Anda melalui formulir di samping!</p>
                     </div>
                 </div>
             </div>
@@ -1060,38 +1033,7 @@
         const scriptURL = 'https://script.google.com/macros/s/AKfycbykBTJbO0vom3HpSDlvd4DM1uT5Ekh9x2kRvRcH9OJasx_C1GPeKi0xpC5quwEwsfe0yw/exec';
 
         // Data Foto Galeri Awal (Default 6 foto lanskap taman)
-        const defaultPhotos = [
-            {
-                nama: 'Pengelola RTH',
-                keterangan: 'Kawasan Penghijauan & Fasilitas Terbuka',
-                url: 'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?w=800&auto=format&fit=crop&q=80'
-            },
-            {
-                nama: 'Warga Pugaan',
-                keterangan: 'Kunjungan Warga & Interaksi Komunitas',
-                url: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800&auto=format&fit=crop&q=80'
-            },
-            {
-                nama: 'Tim Inovasi',
-                keterangan: 'Gerbang Utama & Lanskap Ruang Hijau Cerdas',
-                url: 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?w=800&auto=format&fit=crop&q=80'
-            },
-            {
-                nama: 'BUMDes Pugaan',
-                keterangan: 'Area Santai Gazebo & Free WiFi Hotspot',
-                url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80'
-            },
-            {
-                nama: 'Warga Sekitar',
-                keterangan: 'Suasana Senja Asri di RTH Smart Pugaan',
-                url: 'https://images.unsplash.com/photo-1470240731273-7821a6eeb6bd?w=800&auto=format&fit=crop&q=80'
-            },
-            {
-                nama: 'Pelajar & Mahasiswa',
-                keterangan: 'Aktivitas Belajar & Literasi Digital Warga',
-                url: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&auto=format&fit=crop&q=80'
-            }
-        ];
+        const defaultPhotos = [];
         let uploadedPhotos = [];
         let galleryPhotos = [...defaultPhotos];
         let galleryPage = 1;
@@ -1101,6 +1043,19 @@
         function renderGallery() {
             const grid = document.getElementById('gallery-grid');
             if (!grid) return;
+
+            if (galleryPhotos.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full glass-panel p-12 rounded-3xl border-white/10 text-center text-slate-400 text-sm">
+                        <i class="fas fa-images text-4xl text-purple-400/50 mb-3 block"></i>
+                        <p class="font-semibold text-white mb-1">Belum Ada Foto di Galeri</p>
+                        <p class="text-xs text-slate-400">Jadilah yang pertama membagikan foto keseruan Anda di RTH Smart melalui form di bawah!</p>
+                    </div>
+                `;
+                const paginationEl = document.getElementById('gallery-pagination');
+                if (paginationEl) paginationEl.classList.add('hidden');
+                return;
+            }
 
             const totalPages = Math.max(1, Math.ceil(galleryPhotos.length / photosPerPage));
             if (galleryPage > totalPages) galleryPage = totalPages;
@@ -1273,7 +1228,16 @@
             .then(res => res.json())
             .then(data => {
                 if (refreshIcon) refreshIcon.classList.remove('fa-spin');
-                if (!data || data.length === 0) return;
+                if (!data || data.length === 0) {
+                    guestList.innerHTML = `
+                        <div id="guest-empty-placeholder" class="glass-panel p-8 rounded-3xl border-white/10 text-center text-slate-400 text-sm">
+                            <i class="fas fa-comments text-3xl text-sky-400/50 mb-3 block"></i>
+                            <p class="font-semibold text-white mb-1">Belum Ada Kesan Pengunjung</p>
+                            <p class="text-xs text-slate-400">Jadilah yang pertama menuliskan pengalaman Anda melalui formulir di samping!</p>
+                        </div>
+                    `;
+                    return;
+                }
 
                 let html = '';
                 data.slice(0, 20).forEach(g => {
@@ -1357,6 +1321,8 @@
                     </div>
                 `;
                 const guestList = document.getElementById("guest-list");
+                const placeholder = document.getElementById("guest-empty-placeholder");
+                if (placeholder) placeholder.remove();
                 guestList.insertBefore(newCard, guestList.firstChild);
                 newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
