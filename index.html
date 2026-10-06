@@ -1622,7 +1622,7 @@
           appendMessage('ai', data.reply);
         } catch (error) {
           document.getElementById(loadingId).remove();
-          appendMessage('ai', "Maaf, sistem sedang sibuk. Coba lagi nanti ya.");
+          appendMessage('ai', "Error di Website: " + error.message);
         }
       }
 
