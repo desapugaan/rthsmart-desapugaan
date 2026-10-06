@@ -1501,75 +1501,84 @@
 </body>
 </html>
 <!-- ========================================== -->
-<!-- WIDGET CHAT RTH AI (SUPER KECIL & PRESISI)  -->
+<!-- WIDGET CHAT RTH AI (MODERN KLASIK & MINI)   -->
 <!-- ========================================== -->
 
 <!-- Import Font & Ikon -->
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Plus+Jakarta+Sans:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
   /* Wadah Utama di Pojok Kanan Bawah */
-  .rth-fixed-container {
+  .rth-classic-container {
     position: fixed;
-    bottom: 15px;
-    right: 15px;
+    bottom: 12px;
+    right: 12px;
     z-index: 9999;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
   }
 
-  /* Label "RTH AI" & Tangan Menunjuk */
-  .rth-mini-badge {
-    background: #0f172a;
-    border: 1px solid rgba(20, 184, 166, 0.4);
-    padding: 3px 8px;
-    border-radius: 8px;
+  /* Label "RTH AI" Bergaya Klasik Modern */
+  .rth-classic-badge {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    padding: 2px 6px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
-    gap: 4px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.4);
-    font-family: 'Orbitron', sans-serif;
+    gap: 3px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   }
 
-  /* Tombol Chat Utama (Sangat Mini: 38px) */
-  .rth-mini-btn {
-    width: 38px;
-    height: 38px;
-    background: linear-gradient(135deg, #10b981, #14b8a6);
+  .rth-classic-badge span {
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    font-weight: 600;
+    color: #1e293b;
+    letter-spacing: 0.5px;
+  }
+
+  /* Tombol Chat Utama (Sangat Kecil & Elegan: 32px) */
+  .rth-classic-btn {
+    width: 32px;
+    height: 32px;
+    background: #1e293b;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 3px 10px rgba(20, 184, 166, 0.4);
+    box-shadow: 0 3px 8px rgba(30, 41, 59, 0.25);
     cursor: pointer;
-    border: none;
-    color: white;
-    transition: transform 0.2s ease;
+    border: 1px solid #e2e8f0;
+    color: #f8fafc;
+    transition: all 0.2s ease;
   }
 
-  .rth-mini-btn:hover {
-    transform: scale(1.08);
+  .rth-classic-btn:hover {
+    background: #0f172a;
+    transform: translateY(-1px);
   }
 
-  /* Kotak Jendela Chat (Kecil, Rapi, & Compact) */
+  /* Kotak Jendela Chat (Format Klasik Modern: Bersih & Rapi) */
   #chat-box {
     position: fixed;
-    bottom: 65px;
-    right: 15px;
-    width: 270px;
+    bottom: 55px;
+    right: 12px;
+    width: 250px;
     max-width: 85vw;
-    height: 340px;
-    background: #0f172a;
-    border-radius: 12px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(20, 184, 166, 0.3);
+    height: 310px;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+    border: 1px solid #e2e8f0;
     display: none;
     flex-direction: column;
     overflow: hidden;
     z-index: 10000;
+    font-family: 'Plus Jakarta Sans', sans-serif;
   }
 
   #chat-box.flex {
@@ -1577,8 +1586,120 @@
   }
 </style>
 
-<!-- Tombol & Label (Presisi Satu Jalur di Pojok Kanan Bawah) -->
-<div class="rth-fixed-container">
+<!-- Tombol & Label Modern Klasik -->
+<div class="rth-classic-container">
   
-  <!-- Lencana Teks & Tangan Menunjuk Tepat di Atas Tombol -->
-  <div class="rth-mini-badge animate-bounce"
+  <!-- Label Klasik dengan Tangan Menunjuk -->
+  <div class="rth-classic-badge animate-bounce" style="animation-duration: 2s;">
+    <span>RTH AI</span>
+    <i class="fas fa-hand-point-down text-slate-600 text-[9px] animate-pulse"></i>
+  </div>
+
+  <!-- Tombol Mini Bulat Klasik -->
+  <button id="chat-toggle" class="rth-classic-btn">
+    <i class="fas fa-comment-dots text-xs"></i>
+  </button>
+
+</div>
+
+<!-- Kotak Jendela Chat (Gaya Bersih & Elegan) -->
+<div id="chat-box" class="shadow-2xl flex-col">
+  <!-- Header Klasik -->
+  <div class="bg-slate-900 text-white p-2 flex justify-between items-center border-b border-slate-800">
+    <div class="flex items-center gap-1.5">
+      <i class="fas fa-landmark text-teal-400 text-[10px]"></i>
+      <span style="font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.5px;">Asisten RTH</span>
+    </div>
+    <button id="close-chat" class="text-slate-400 hover:text-white transition"><i class="fas fa-times text-xs"></i></button>
+  </div>
+  
+  <!-- Area Pesan -->
+  <div id="chat-content" class="flex-1 p-2 overflow-y-auto flex flex-col gap-1.5 bg-slate-50 text-[11px] text-slate-700">
+    <div class="bg-white border border-slate-200 text-slate-800 p-2 rounded-lg self-start max-w-[85%] shadow-xs">
+      Halo! Ulun asisten virtual RTH Smart Desa Pugaan. Ada yang bisa dibantu?
+    </div>
+  </div>
+  
+  <!-- Area Input Pesan -->
+  <div class="p-1.5 bg-white border-t border-slate-100 flex gap-1">
+    <input type="text" id="chat-input" class="flex-1 bg-slate-100 text-slate-800 placeholder-slate-400 rounded px-2 py-1 text-[10px] focus:outline-none focus:ring-1 focus:ring-slate-400 transition" placeholder="Ketik pertanyaan...">
+    <button id="send-btn" class="bg-slate-900 text-white w-7 rounded hover:bg-slate-800 transition flex items-center justify-center">
+      <i class="fas fa-paper-plane text-[9px]"></i>
+    </button>
+  </div>
+</div>
+
+<!-- Script Logika JavaScript -->
+<script>
+  const chatToggle = document.getElementById('chat-toggle');
+  const chatBox = document.getElementById('chat-box');
+  const closeChat = document.getElementById('close-chat');
+  const sendBtn = document.getElementById('send-btn');
+  const chatInput = document.getElementById('chat-input');
+  const chatContent = document.getElementById('chat-content');
+
+  // URL Backend Google Apps Script Anda
+  const AI_BACKEND_URL = "https://script.google.com/macros/s/AKfycbwpfw_mP_cEbhtb0Bl-T8H3TYH0RjCNI50EYvn3HpqlcNydRElWQdiFbcHKHDcbMPDdUA/exec"; 
+
+  // Buka dan tutup jendela chat
+  chatToggle.addEventListener('click', () => {
+    chatBox.classList.toggle('hidden');
+    chatBox.classList.toggle('flex');
+  });
+
+  closeChat.addEventListener('click', () => {
+    chatBox.classList.add('hidden');
+    chatBox.classList.remove('flex');
+  });
+
+  // Fungsi menambah pesan ke layar
+  function appendMessage(sender, text) {
+    const msgDiv = document.createElement('div');
+    msgDiv.className = sender === 'user' 
+      ? "bg-slate-900 text-white p-2 rounded-lg self-end max-w-[85%] shadow-xs text-[11px]"
+      : "bg-white border border-slate-200 text-slate-800 p-2 rounded-lg self-start max-w-[85%] shadow-xs text-[11px]";
+    msgDiv.innerText = text;
+    chatContent.appendChild(msgDiv);
+    chatContent.scrollTop = chatContent.scrollHeight;
+  }
+
+  // Fungsi kirim pesan ke Apps Script
+  async function sendMessage() {
+    const text = chatInput.value.trim();
+    if (!text) return;
+
+    appendMessage('user', text);
+    chatInput.value = '';
+    
+    // Indikator loading
+    const loadingId = "loading-" + Date.now();
+    const loadingDiv = document.createElement('div');
+    loadingDiv.id = loadingId;
+    loadingDiv.className = "text-slate-400 text-[10px] self-start ml-1 italic";
+    loadingDiv.innerText = "Asisten sedang mengetik...";
+    chatContent.appendChild(loadingDiv);
+    chatContent.scrollTop = chatContent.scrollHeight;
+
+    try {
+      const response = await fetch(AI_BACKEND_URL, {
+        method: 'POST',
+        body: JSON.stringify({ message: text }),
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+      });
+      
+      const data = await response.json();
+      document.getElementById(loadingId).remove();
+      appendMessage('ai', data.reply);
+    } catch (error) {
+      document.getElementById(loadingId).remove();
+      appendMessage('ai', "Error di Website: " + error.message);
+    }
+  }
+
+  // Kirim dengan tombol Enter
+  chatInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendMessage();
+  });
+  
+  sendBtn.addEventListener('click', sendMessage);
+</script>
