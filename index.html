@@ -1500,3 +1500,136 @@
     </script>
 </body>
 </html>
+
+<!-- ========================================== -->
+    <!-- WIDGET CHAT RTH AI (UI & LOGIKA)           -->
+    <!-- ========================================== -->
+    
+    <!-- Import Font Futuristik -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+
+    <!-- Wrapper Tombol Chat Floating & Label -->
+    <div class="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-3">
+      <!-- Label Nama "RTH AI" dengan Tangan Menunjuk -->
+      <div class="relative group animate-bounce" style="animation-duration: 2s;"> 
+        <!-- Efek Cahaya (Glow) di belakang teks -->
+        <div class="absolute -inset-1 bg-gradient-to-r from-green-500 to-teal-400 rounded-2xl blur opacity-60 group-hover:opacity-100 transition duration-500"></div>
+        
+        <!-- Lencana Teks & Ikon -->
+        <div class="relative flex flex-col items-center gap-1 bg-slate-900 px-4 py-2.5 rounded-2xl border border-slate-700 shadow-xl" style="font-family: 'Orbitron', sans-serif;">
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-teal-300 font-bold tracking-widest text-sm">
+            RTH AI
+          </span>
+          <i class="fas fa-hand-point-down text-teal-400 text-xl animate-pulse mt-0.5"></i>
+        </div>
+      </div>
+      
+      <!-- Tombol Chat Utama -->
+      <button id="chat-toggle" class="bg-gradient-to-br from-green-500 to-teal-600 text-white w-16 h-16 rounded-full shadow-[0_10px_25px_-5px_rgba(20,184,166,0.6)] hover:scale-110 hover:rotate-12 transition-all duration-300 flex items-center justify-center">
+        <i class="fas fa-comment-dots text-3xl"></i>
+      </button>
+    </div>
+
+    <!-- Kotak Chat -->
+    <div id="chat-box" class="fixed bottom-32 right-6 w-80 sm:w-96 bg-white rounded-xl shadow-2xl border border-gray-200 hidden flex-col overflow-hidden z-50 transition-all duration-300">
+      <!-- Header -->
+      <div class="bg-gradient-to-r from-green-600 to-teal-500 text-white p-4 font-bold flex justify-between items-center shadow-md">
+        <div class="flex items-center gap-2">
+          <i class="fas fa-robot text-xl"></i>
+          <span style="font-family: 'Orbitron', sans-serif; letter-spacing: 1px;">Asisten RTH</span>
+        </div>
+        <button id="close-chat" class="hover:text-gray-200 transition"><i class="fas fa-times text-lg"></i></button>
+      </div>
+      
+      <!-- Area Pesan -->
+      <div id="chat-content" class="h-72 p-4 overflow-y-auto flex flex-col gap-3 bg-slate-50 text-sm">
+        <div class="bg-white border border-gray-200 text-gray-800 p-3 rounded-tr-xl rounded-bl-xl rounded-br-xl self-start max-w-[85%] shadow-sm">
+          Halo! Ulun asisten virtual RTH Smart Desa Pugaan. Ada yang bisa dibantu?
+        </div>
+      </div>
+      
+      <!-- Input Area -->
+      <div class="p-3 bg-white border-t border-gray-200 flex gap-2">
+        <input type="text" id="chat-input" class="flex-1 bg-slate-100 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition" placeholder="Ketik pertanyaan Anda di sini...">
+        <button id="send-btn" class="bg-gradient-to-r from-green-500 to-teal-500 text-white w-12 rounded-lg hover:opacity-90 transition flex items-center justify-center">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Script Logika Chat -->
+    <script>
+      const chatToggle = document.getElementById('chat-toggle');
+      const chatBox = document.getElementById('chat-box');
+      const closeChat = document.getElementById('close-chat');
+      const sendBtn = document.getElementById('send-btn');
+      const chatInput = document.getElementById('chat-input');
+      const chatContent = document.getElementById('chat-content');
+
+      // ---------------------------------------------------------
+      // MASUKKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI
+      // ---------------------------------------------------------
+      const AI_BACKEND_URL = "https://script.google.com/macros/s/AKfycbzgz310MIYCgmmp38VFpFnb5TvugP403xHLsFIcVR1F1UTX95COXX-Aaaoby0Uz4zoIAQ/exec"; 
+
+      // Buka tutup chat
+      chatToggle.addEventListener('click', () => {
+        chatBox.classList.toggle('hidden');
+        chatBox.classList.toggle('flex');
+      });
+
+      closeChat.addEventListener('click', () => {
+        chatBox.classList.add('hidden');
+        chatBox.classList.remove('flex');
+      });
+
+      // Fungsi menambah pesan ke layar
+      function appendMessage(sender, text) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = sender === 'user' 
+          ? "bg-teal-100 text-teal-900 p-3 rounded-tl-xl rounded-bl-xl rounded-br-xl self-end max-w-[85%] shadow-sm"
+          : "bg-white border border-gray-200 text-gray-800 p-3 rounded-tr-xl rounded-bl-xl rounded-br-xl self-start max-w-[85%] shadow-sm";
+        msgDiv.innerText = text;
+        chatContent.appendChild(msgDiv);
+        chatContent.scrollTop = chatContent.scrollHeight;
+      }
+
+      // Fungsi kirim pesan ke Apps Script
+      async function sendMessage() {
+        const text = chatInput.value.trim();
+        if (!text) return;
+
+        appendMessage('user', text);
+        chatInput.value = '';
+        
+        // Indikator loading
+        const loadingId = "loading-" + Date.now();
+        const loadingDiv = document.createElement('div');
+        loadingDiv.id = loadingId;
+        loadingDiv.className = "text-gray-400 text-xs self-start ml-2 italic";
+        loadingDiv.innerText = "Asisten sedang mengetik...";
+        chatContent.appendChild(loadingDiv);
+        chatContent.scrollTop = chatContent.scrollHeight;
+
+        try {
+          const response = await fetch(AI_BACKEND_URL, {
+            method: 'POST',
+            body: JSON.stringify({ message: text }),
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+          });
+          
+          const data = await response.json();
+          document.getElementById(loadingId).remove();
+          appendMessage('ai', data.reply);
+        } catch (error) {
+          document.getElementById(loadingId).remove();
+          appendMessage('ai', "Maaf, sistem sedang sibuk. Coba lagi nanti ya.");
+        }
+      }
+
+      // Kirim pakai tombol Enter
+      chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+      });
+      
+      sendBtn.addEventListener('click', sendMessage);
+    </script>
