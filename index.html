@@ -1501,7 +1501,7 @@
 </body>
 </html>
 <!-- ========================================== -->
-<!-- WIDGET CHAT RTH AI (UI & LOGIKA RAPI)     -->
+<!-- WIDGET CHAT RTH AI (KECIL & TANGAN DI ATAS) -->
 <!-- ========================================== -->
 
 <!-- Import Font & Ikon -->
@@ -1509,54 +1509,67 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-  /* 1. Tombol Lingkaran Chat Mengambang (Diperkecil & Rapi) */
-  .rth-chat-btn {
+  /* Container Utama di Pojok Kanan Bawah */
+  .rth-widget-container {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    width: 50px;
-    height: 50px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+  }
+
+  /* Label "RTH AI" & Tangan Menunjuk (Berada di atas tombol) */
+  .rth-chat-badge {
+    background: #0f172a;
+    border: 1px solid rgba(20, 184, 166, 0.4);
+    padding: 4px 10px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    font-family: 'Orbitron', sans-serif;
+  }
+
+  /* Tombol Lingkaran Chat (Lebih kecil & pas) */
+  .rth-chat-btn {
+    width: 44px;
+    height: 44px;
     background: linear-gradient(135deg, #10b981, #14b8a6);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 15px rgba(20, 184, 166, 0.4);
+    box-shadow: 0 4px 12px rgba(20, 184, 166, 0.5);
     cursor: pointer;
-    z-index: 9999;
-    transition: transform 0.3s ease;
     border: none;
     color: white;
+    transition: transform 0.2s ease;
   }
 
   .rth-chat-btn:hover {
     transform: scale(1.08);
   }
 
-  /* 2. Wrapper Label Nama "RTH AI" di Samping Tombol */
-  .rth-chat-badge-wrapper {
-    position: fixed;
-    bottom: 25px;
-    right: 80px;
-    z-index: 9998;
-  }
-
-  /* 3. Kotak Jendela Chat (Kompak, Minimalis, dan Rapi) */
+  /* Kotak Jendela Chat (Super Kompak & Rapi) */
   #chat-box {
     position: fixed;
-    bottom: 85px;
+    bottom: 80px;
     right: 20px;
-    width: 320px;
+    width: 290px;
     max-width: 90vw;
-    height: 420px;
+    height: 380px;
     background: #0f172a;
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border-radius: 14px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
     border: 1px solid rgba(20, 184, 166, 0.3);
     display: none;
     flex-direction: column;
     overflow: hidden;
-    z-index: 9999;
+    z-index: 10000;
   }
 
   #chat-box.flex {
@@ -1564,44 +1577,47 @@
   }
 </style>
 
-<!-- Label Nama "RTH AI" dengan Tangan Menunjuk -->
-<div class="rth-chat-badge-wrapper group animate-bounce" style="animation-duration: 2s;">  
-  <div class="relative flex flex-col items-center gap-0.5 bg-slate-900 px-3 py-2 rounded-xl border border-slate-700 shadow-xl" style="font-family: 'Orbitron', sans-serif;">
-    <span class="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-teal-300 font-bold tracking-wider text-xs">
+<!-- Wrapper Utama (Posisi Tangan Menunjuk Tepat di Atas Tombol Chat) -->
+<div class="rth-widget-container">
+  
+  <!-- Label "RTH AI" & Tangan Menunjuk -->
+  <div class="rth-chat-badge group animate-bounce" style="animation-duration: 2s;">
+    <span class="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-teal-300 font-bold text-[10px] tracking-wider">
       RTH AI
     </span>
-    <i class="fas fa-hand-point-down text-teal-400 text-base animate-pulse"></i>
+    <i class="fas fa-hand-point-down text-teal-400 text-xs animate-pulse"></i>
   </div>
+
+  <!-- Tombol Chat Utama (Bulat 44px) -->
+  <button id="chat-toggle" class="rth-chat-btn">
+    <i class="fas fa-comment-dots text-lg"></i>
+  </button>
+
 </div>
 
-<!-- Tombol Chat Utama (Bulat 50px) -->
-<button id="chat-toggle" class="rth-chat-btn">
-  <i class="fas fa-comment-dots text-xl"></i>
-</button>
-
-<!-- Kotak Jendela Chat (Hidden by default) -->
+<!-- Kotak Jendela Chat -->
 <div id="chat-box" class="bg-slate-900 shadow-2xl flex-col">
   <!-- Header Chat -->
-  <div class="bg-gradient-to-r from-green-600 to-teal-600 text-white p-3 font-bold flex justify-between items-center shadow-md">
-    <div class="flex items-center gap-2">
-      <i class="fas fa-robot text-base"></i>
-      <span style="font-family: 'Orbitron', sans-serif; letter-spacing: 1px; font-size: 12px;">Asisten RTH</span>
+  <div class="bg-gradient-to-r from-green-600 to-teal-600 text-white p-2.5 font-bold flex justify-between items-center shadow-md">
+    <div class="flex items-center gap-1.5">
+      <i class="fas fa-robot text-sm"></i>
+      <span style="font-family: 'Orbitron', sans-serif; font-size: 11px; letter-spacing: 0.5px;">Asisten RTH</span>
     </div>
-    <button id="close-chat" class="text-white hover:text-gray-200 transition"><i class="fas fa-times text-base"></i></button>
+    <button id="close-chat" class="text-white hover:text-gray-200 transition"><i class="fas fa-times text-sm"></i></button>
   </div>
   
-  <!-- Area Pesan (Chat Content) -->
-  <div id="chat-content" class="flex-1 p-3 overflow-y-auto flex flex-col gap-2.5 bg-slate-950 text-xs text-slate-200">
-    <div class="bg-slate-800 border border-slate-700 text-slate-100 p-2.5 rounded-tr-xl rounded-bl-xl rounded-br-xl self-start max-w-[85%] shadow-sm">
+  <!-- Area Pesan -->
+  <div id="chat-content" class="flex-1 p-2.5 overflow-y-auto flex flex-col gap-2 bg-slate-950 text-[11px] text-slate-200">
+    <div class="bg-slate-800 border border-slate-700 text-slate-100 p-2 rounded-tr-lg rounded-bl-lg rounded-br-lg self-start max-w-[85%] shadow-sm">
       Halo! Ulun asisten virtual RTH Smart Desa Pugaan. Ada yang bisa dibantu?
     </div>
   </div>
   
   <!-- Area Input Pesan -->
-  <div class="p-2.5 bg-slate-900 border-t border-slate-800 flex gap-2">
-    <input type="text" id="chat-input" class="flex-1 bg-slate-800 text-slate-100 placeholder-slate-400 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-teal-500 transition" placeholder="Ketik pertanyaan...">
-    <button id="send-btn" class="bg-gradient-to-r from-green-500 to-teal-500 text-white w-9 rounded-lg hover:opacity-90 transition flex items-center justify-center">
-      <i class="fas fa-paper-plane text-xs"></i>
+  <div class="p-2 bg-slate-900 border-t border-slate-800 flex gap-1.5">
+    <input type="text" id="chat-input" class="flex-1 bg-slate-800 text-slate-100 placeholder-slate-400 rounded-md px-2.5 py-1.5 text-[11px] focus:outline-none focus:ring-1 focus:ring-teal-500 transition" placeholder="Ketik pertanyaan...">
+    <button id="send-btn" class="bg-gradient-to-r from-green-500 to-teal-500 text-white w-8 rounded-md hover:opacity-90 transition flex items-center justify-center">
+      <i class="fas fa-paper-plane text-[10px]"></i>
     </button>
   </div>
 </div>
@@ -1619,4 +1635,64 @@
   const AI_BACKEND_URL = "https://script.google.com/macros/s/AKfycbwpfw_mP_cEbhtb0Bl-T8H3TYH0RjCNI50EYvn3HpqlcNydRElWQdiFbcHKHDcbMPDdUA/exec"; 
 
   // Buka dan tutup jendela chat
-  chatToggle.addEventListener('click',
+  chatToggle.addEventListener('click', () => {
+    chatBox.classList.toggle('hidden');
+    chatBox.classList.toggle('flex');
+  });
+
+  closeChat.addEventListener('click', () => {
+    chatBox.classList.add('hidden');
+    chatBox.classList.remove('flex');
+  });
+
+  // Fungsi menambah pesan ke layar
+  function appendMessage(sender, text) {
+    const msgDiv = document.createElement('div');
+    msgDiv.className = sender === 'user' 
+      ? "bg-teal-600 text-white p-2 rounded-tl-lg rounded-bl-lg rounded-br-lg self-end max-w-[85%] shadow-sm text-[11px]"
+      : "bg-slate-800 border border-slate-700 text-slate-100 p-2 rounded-tr-lg rounded-bl-lg rounded-br-lg self-start max-w-[85%] shadow-sm text-[11px]";
+    msgDiv.innerText = text;
+    chatContent.appendChild(msgDiv);
+    chatContent.scrollTop = chatContent.scrollHeight;
+  }
+
+  // Fungsi kirim pesan ke Apps Script
+  async function sendMessage() {
+    const text = chatInput.value.trim();
+    if (!text) return;
+
+    appendMessage('user', text);
+    chatInput.value = '';
+    
+    // Indikator loading
+    const loadingId = "loading-" + Date.now();
+    const loadingDiv = document.createElement('div');
+    loadingDiv.id = loadingId;
+    loadingDiv.className = "text-slate-400 text-[10px] self-start ml-1 italic";
+    loadingDiv.innerText = "Asisten sedang mengetik...";
+    chatContent.appendChild(loadingDiv);
+    chatContent.scrollTop = chatContent.scrollHeight;
+
+    try {
+      const response = await fetch(AI_BACKEND_URL, {
+        method: 'POST',
+        body: JSON.stringify({ message: text }),
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+      });
+      
+      const data = await response.json();
+      document.getElementById(loadingId).remove();
+      appendMessage('ai', data.reply);
+    } catch (error) {
+      document.getElementById(loadingId).remove();
+      appendMessage('ai', "Error di Website: " + error.message);
+    }
+  }
+
+  // Kirim dengan tombol Enter
+  chatInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendMessage();
+  });
+  
+  sendBtn.addEventListener('click', sendMessage);
+</script>
