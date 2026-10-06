@@ -1509,7 +1509,72 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
 
     <!-- Wrapper Tombol Chat Floating & Label -->
-    <div class="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-3">
+    /* 1. Tombol Lingkaran Chat Mengambang (Diperkecil) */
+.rth-chat-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 50px;  /* Ukuran diperkecil dari sebelumnya */
+  height: 50px; /* Ukuran diperkecil dari sebelumnya */
+  background: linear-gradient(135deg, #00f2fe, #4facfe);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(0, 242, 254, 0.4);
+  cursor: pointer;
+  z-index: 9999;
+  transition: transform 0.3s ease;
+}
+
+.rth-chat-btn:hover {
+  transform: scale(1.08);
+}
+
+/* 2. Label Teks & Ikon Tangan di Samping Tombol */
+.rth-chat-label {
+  position: fixed;
+  bottom: 30px;
+  right: 80px; /* Menyesuaikan posisi di sebelah tombol */
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 9998;
+  border: 1px solid rgba(0, 242, 254, 0.3);
+}
+
+/* 3. Kotak Menu Jendela Chat (Bentuk Diperkecil & Lebih Kompak) */
+.rth-chat-window {
+  position: fixed;
+  bottom: 85px;
+  right: 20px;
+  width: 320px;   /* Lebar diperkecil agar pas dan rapi */
+  max-width: 90vw;
+  height: 420px;  /* Tinggi dibuat lebih ringkas */
+  background: #0f172a;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(0, 242, 254, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 9999;
+  transition: all 0.3s ease;
+}
+
+/* Sembunyikan jendela saat tertutup */
+.rth-chat-window.hidden {
+  display: none;
+}
       <!-- Label Nama "RTH AI" dengan Tangan Menunjuk -->
       <div class="relative group animate-bounce" style="animation-duration: 2s;"> 
         <!-- Efek Cahaya (Glow) di belakang teks -->
