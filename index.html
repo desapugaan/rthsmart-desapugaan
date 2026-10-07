@@ -4,6 +4,108 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RTH Smart Desa Pugaan - Tabalong Green & Digital Park</title>
+
+    <!-- SATU KONFIGURASI BACKEND UNTUK CHAT, BUKU TAMU, DAN GALERI -->
+    <script>
+      window.RTH_CONFIG = {
+        // Jika file ini dihosting di website sendiri, isi URL /exec deployment baru.
+        // Jika index.html berada dalam Apps Script, google.script.run dipakai otomatis.
+        backendUrl: 'TEMPEL_URL_WEB_APP_ANDA_DI_SINI',
+        requestTimeoutMs: 45000
+      };
+
+      const rthClientId = (function() {
+        try {
+          if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+        } catch (ignored) {}
+        return 'rth-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
+      })();
+
+      function rthError(code, message, retryAfterSeconds) {
+        const error = new Error(message);
+        error.code = code;
+        error.retryAfterSeconds = Number(retryAfterSeconds) || 0;
+        return error;
+      }
+
+      function rthHasRpc() {
+        return typeof google !== 'undefined' && google.script && google.script.run;
+      }
+
+      function rthApi(payload) {
+        const request = Object.assign({clientId: rthClientId}, payload);
+        return new Promise((resolve, reject) => {
+          let finished = false;
+          let timer;
+          let controller;
+          function finish(error, data) {
+            if (finished) return;
+            finished = true;
+            clearTimeout(timer);
+            if (error) { reject(error); return; }
+            if (!data || typeof data !== 'object') {
+              reject(rthError('INVALID_RESPONSE', 'Respons server tidak sesuai. Periksa URL dan versi deployment.'));
+              return;
+            }
+            if (data.status === 'error') {
+              reject(rthError(data.code || 'SERVER_ERROR', data.message || data.reply || 'Server tidak dapat memproses permintaan.', data.retryAfterSeconds));
+              return;
+            }
+            resolve(data);
+          }
+          timer = setTimeout(() => {
+            finish(rthError('TIMEOUT', 'Waktu tunggu server habis. Hasil belum terkonfirmasi; periksa sebelum mengirim ulang.'));
+            if (controller) controller.abort();
+          }, Number(window.RTH_CONFIG.requestTimeoutMs) || 45000);
+          try {
+            if (rthHasRpc()) {
+              // Mode HTML Service: tidak perlu fetch lintas-domain atau login pengunjung.
+              google.script.run
+                .withSuccessHandler(data => finish(null, data))
+                .withFailureHandler(() => finish(rthError('RPC_ERROR', 'Apps Script tidak dapat diakses. Periksa izin dan deployment Web app.')))
+                .apiRequest(request);
+              return;
+            }
+            const url = String(window.RTH_CONFIG.backendUrl || '').trim();
+            if (!/^https:\/\/script\.google\.com\/(?:a\/[^/]+\/)?macros\/s\/[A-Za-z0-9_-]+\/exec(?:\?.*)?$/.test(url)) {
+              finish(rthError('BACKEND_NOT_CONFIGURED', 'Backend belum diatur. Pengelola perlu mengisi backendUrl dengan URL Web app /exec.'));
+              return;
+            }
+            controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+            const options = {
+              method: 'POST',
+              mode: 'cors',
+              credentials: 'omit',
+              redirect: 'follow',
+              // Simple request: hindari preflight dari application/json.
+              // Jangan ganti menjadi no-cors: balasan AI menjadi tidak terbaca.
+              headers: {'Content-Type': 'text/plain;charset=utf-8'},
+              body: JSON.stringify(request)
+            };
+            if (controller) options.signal = controller.signal;
+            fetch(url, options).then(async response => {
+              if (!response.ok) throw rthError('HTTP_ERROR', 'Backend belum bisa diakses (HTTP ' + response.status + '). Periksa akses Anyone.');
+              const raw = await response.text();
+              let data;
+              try { data = JSON.parse(raw); }
+              catch (ignored) { throw rthError('DEPLOYMENT_ERROR', 'Server tidak mengirim JSON. Pastikan URL /exec dan deployment terbaru mengizinkan akses Anyone.'); }
+              finish(null, data);
+            }).catch(error => {
+              finish(error.code ? error : rthError('NETWORK_ERROR', 'Tidak dapat membaca balasan server. Periksa internet, URL /exec, izin Anyone, atau gunakan halaman index dalam Apps Script.'));
+            });
+          } catch (ignored) {
+            finish(rthError('CONNECTION_ERROR', 'Koneksi backend gagal disiapkan. Muat ulang halaman dan periksa konfigurasi.'));
+          }
+        });
+      }
+
+      function escapeHtml(value) {
+        return String(value == null ? '' : value).replace(/[&<>"']/g, char => ({
+          '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[char]);
+      }
+    </script>
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -703,7 +805,7 @@
                             Kopi racikan khas Kalimantan dengan aroma wangi mantap, cocok menemani obrolan santai sore hari.
                         </p>
                     </div>
-                    <a href="https://wa.me/6285753496613?text=Halo%20Cafe%20BUMDes%20Pugaan,%20saya%20mau%20pesan%20Kopi%20Hitam%20Pugaan" target="_blank" class="w-full py-2.5 rounded-xl glass-panel hover:bg-emerald-500/20 text-emerald-300 border-emerald-400/30 font-semibold text-xs flex items-center justify-center space-x-2 transition">
+                    <a href="https://wa.me/6285753496613?text=Halo%20Cafe%20BUMDes%20Pugaan,%20saya%20mau%20pesan%20Kopi%20Hitam%20Pugaan" target="_blank" rel="noopener noreferrer" class="w-full py-2.5 rounded-xl glass-panel hover:bg-emerald-500/20 text-emerald-300 border-emerald-400/30 font-semibold text-xs flex items-center justify-center space-x-2 transition">
                         <i class="fab fa-whatsapp text-sm"></i>
                         <span>Pesan via WhatsApp</span>
                     </a>
@@ -727,7 +829,7 @@
                             Minuman perasan jeruk asli dingin pelepas dahaga saat berolahraga atau berjalan-jalan di kawasan taman.
                         </p>
                     </div>
-                    <a href="https://wa.me/6285753496613?text=Halo%20Cafe%20BUMDes%20Pugaan,%20saya%20mau%20pesan%20Es%20Jeruk%20Segar" target="_blank" class="w-full py-2.5 rounded-xl glass-panel hover:bg-emerald-500/20 text-emerald-300 border-emerald-400/30 font-semibold text-xs flex items-center justify-center space-x-2 transition">
+                    <a href="https://wa.me/6285753496613?text=Halo%20Cafe%20BUMDes%20Pugaan,%20saya%20mau%20pesan%20Es%20Jeruk%20Segar" target="_blank" rel="noopener noreferrer" class="w-full py-2.5 rounded-xl glass-panel hover:bg-emerald-500/20 text-emerald-300 border-emerald-400/30 font-semibold text-xs flex items-center justify-center space-x-2 transition">
                         <i class="fab fa-whatsapp text-sm"></i>
                         <span>Pesan via WhatsApp</span>
                     </a>
@@ -751,7 +853,7 @@
                             Gorengan renyah, kue tradisional, dan aneka keripik gurih produksi murni warga Desa Pugaan.
                         </p>
                     </div>
-                    <a href="https://wa.me/6285753496613?text=Halo%20Cafe%20BUMDes%20Pugaan,%20saya%20mau%20pesan%20Aneka%20Camilan%20UMKM" target="_blank" class="w-full py-2.5 rounded-xl glass-panel hover:bg-emerald-500/20 text-emerald-300 border-emerald-400/30 font-semibold text-xs flex items-center justify-center space-x-2 transition">
+                    <a href="https://wa.me/6285753496613?text=Halo%20Cafe%20BUMDes%20Pugaan,%20saya%20mau%20pesan%20Aneka%20Camilan%20UMKM" target="_blank" rel="noopener noreferrer" class="w-full py-2.5 rounded-xl glass-panel hover:bg-emerald-500/20 text-emerald-300 border-emerald-400/30 font-semibold text-xs flex items-center justify-center space-x-2 transition">
                         <i class="fab fa-whatsapp text-sm"></i>
                         <span>Pesan via WhatsApp</span>
                     </a>
@@ -996,7 +1098,7 @@
                         <a href="#" class="w-10 h-10 rounded-xl glass-panel hover:bg-emerald-500/20 text-emerald-300 border-white/15 flex items-center justify-center transition">
                             <i class="fab fa-youtube"></i>
                         </a>
-                        <a href="https://wa.me/6285750255197" target="_blank" class="w-10 h-10 rounded-xl glass-panel hover:bg-emerald-500/20 text-emerald-300 border-white/15 flex items-center justify-center transition">
+                        <a href="https://wa.me/6285750255197" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-xl glass-panel hover:bg-emerald-500/20 text-emerald-300 border-white/15 flex items-center justify-center transition">
                             <i class="fab fa-whatsapp"></i>
                         </a>
                     </div>
@@ -1027,484 +1129,250 @@
         </div>
     </div>
 
-    <!-- Interactive Scripts -->
+
+    <!-- Interactive Scripts: satu backend, hasil simpan selalu dikonfirmasi -->
     <script>
-        // Google Apps Script API URL
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbwMFlxVAPYu3su9zBejEJKTimmtGNRsEm0G-TdVLL498nWZnCv0RHhHA6rUUJ1VjVmH9Q/exec';
+      const defaultPhotos = [];
+      let uploadedPhotos = [];
+      let galleryPhotos = [...defaultPhotos];
+      let galleryPage = 1;
+      const photosPerPage = 6;
 
-        // Data Foto Galeri Awal (Default 6 foto lanskap taman)
-        const defaultPhotos = [];
-        let uploadedPhotos = [];
-        let galleryPhotos = [...defaultPhotos];
-        let galleryPage = 1;
-        const photosPerPage = 6;
+      function safeImageUrl(value) {
+        const raw = String(value || '');
+        if (/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(raw)) return raw;
+        try { const url = new URL(raw); return url.protocol === 'https:' ? url.href : ''; }
+        catch (ignored) { return ''; }
+      }
 
-        // Render Galeri Foto (Maksimal 6 foto per halaman)
-        function renderGallery() {
-            const grid = document.getElementById('gallery-grid');
-            if (!grid) return;
-
-            if (galleryPhotos.length === 0) {
-                grid.innerHTML = `
-                    <div class="col-span-full glass-panel p-12 rounded-3xl border-white/10 text-center text-slate-400 text-sm">
-                        <i class="fas fa-images text-4xl text-purple-400/50 mb-3 block"></i>
-                        <p class="font-semibold text-white mb-1">Belum Ada Foto di Galeri</p>
-                        <p class="text-xs text-slate-400">Jadilah yang pertama membagikan foto keseruan Anda di RTH Smart melalui form di bawah!</p>
-                    </div>
-                `;
-                const paginationEl = document.getElementById('gallery-pagination');
-                if (paginationEl) paginationEl.classList.add('hidden');
-                return;
-            }
-
-            const totalPages = Math.max(1, Math.ceil(galleryPhotos.length / photosPerPage));
-            if (galleryPage > totalPages) galleryPage = totalPages;
-            if (galleryPage < 1) galleryPage = 1;
-
-            const startIdx = (galleryPage - 1) * photosPerPage;
-            const currentPhotos = galleryPhotos.slice(startIdx, startIdx + photosPerPage);
-
-            let htmlStr = '';
-            currentPhotos.forEach((item, index) => {
-                const fotoNum = startIdx + index + 1;
-                const src = item.url || '';
-                const title = (item.keterangan || ('Foto Dokumentasi ' + fotoNum)).replace(/'/g, "\\'");
-                const uploader = item.nama ? 'Oleh: ' + item.nama : 'Dokumentasi Warga';
-
-                htmlStr += `
-                    <div class="glass-panel rounded-3xl p-3 border-white/15 group cursor-pointer overflow-hidden transition hover:border-emerald-400/40" onclick="openImageModal('${src}', '${title}')">
-                        <div class="aspect-video rounded-2xl overflow-hidden relative">
-                            <img src="${src}" alt="${title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1519331379826-f10be5486c6f?w=800&auto=format&fit=crop&q=80'">
-                            <div class="absolute inset-0 bg-gradient-to-t from-nature-950/90 via-nature-950/20 to-transparent opacity-85 group-hover:opacity-95 transition flex items-end p-5">
-                                <div class="min-w-0">
-                                    <span class="text-emerald-300 text-xs font-semibold block mb-0.5">${uploader}</span>
-                                    <h4 class="text-white font-bold text-sm sm:text-base truncate">${title}</h4>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-
-            grid.innerHTML = htmlStr;
-
-            // Kontrol Pagination
-            const paginationEl = document.getElementById('gallery-pagination');
-            if (paginationEl) {
-                if (galleryPhotos.length > photosPerPage) {
-                    paginationEl.classList.remove('hidden');
-                    document.getElementById('current-page-num').innerText = galleryPage;
-                    document.getElementById('total-pages-num').innerText = totalPages;
-                    document.getElementById('prev-page-btn').disabled = (galleryPage === 1);
-                    document.getElementById('next-page-btn').disabled = (galleryPage === totalPages);
-                } else {
-                    paginationEl.classList.add('hidden');
-                }
-            }
+      function renderGallery() {
+        const grid = document.getElementById('gallery-grid');
+        if (!grid) return;
+        grid.replaceChildren();
+        const pagination = document.getElementById('gallery-pagination');
+        if (!galleryPhotos.length) {
+          grid.innerHTML = '<div class="col-span-full glass-panel p-12 rounded-3xl border-white/10 text-center text-slate-400 text-sm"><i class="fas fa-images text-4xl text-purple-400/50 mb-3 block"></i><p class="font-semibold text-white mb-1">Belum Ada Foto di Galeri</p><p class="text-xs text-slate-400">Bagikan dokumentasi Anda melalui formulir di bawah.</p></div>';
+          if (pagination) pagination.classList.add('hidden');
+          return;
         }
-
-        // Pindah Halaman Galeri Foto
-        function changeGalleryPage(delta) {
-            const totalPages = Math.ceil(galleryPhotos.length / photosPerPage);
-            const newPage = galleryPage + delta;
-            if (newPage >= 1 && newPage <= totalPages) {
-                galleryPage = newPage;
-                renderGallery();
-                const galeriSec = document.getElementById('galeri');
-                if (galeriSec) {
-                    galeriSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            }
-        }
-
-        // Ambil Data Foto Terbaru dari Google Spreadsheet / Google Drive
-        function loadGallery() {
-            fetch(scriptURL + (scriptURL.includes('?') ? '&' : '?') + 'action=getGallery')
-            .then(res => res.json())
-            .then(data => {
-                if (Array.isArray(data) && data.length > 0) {
-                    const serverPhotos = data.filter(d => d.url);
-                    if (serverPhotos.length > 0) {
-                        uploadedPhotos = serverPhotos;
-                        galleryPhotos = [...uploadedPhotos, ...defaultPhotos];
-                        renderGallery();
-                    }
-                }
-            })
-            .catch(() => {});
-        }
-
-        // Kompresi Gambar Otomatis Sebelum Diunggah (Menggunakan Canvas ke JPEG ~150KB)
-        function compressImage(file, maxWidth, maxHeight, quality, callback) {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = function(e) {
-                const img = new Image();
-                img.src = e.target.result;
-                img.onload = function() {
-                    let w = img.width;
-                    let h = img.height;
-                    if (w > h) {
-                        if (w > maxWidth) {
-                            h = Math.round(h * (maxWidth / w));
-                            w = maxWidth;
-                        }
-                    } else {
-                        if (h > maxHeight) {
-                            w = Math.round(w * (maxHeight / h));
-                            h = maxHeight;
-                        }
-                    }
-                    const canvas = document.createElement('canvas');
-                    canvas.width = w;
-                    canvas.height = h;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, w, h);
-                    const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
-                    callback(compressedBase64);
-                };
-            };
-        }
-
-        // Mobile Menu Toggle
-        const menuBtn = document.getElementById('menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-        const menuIcon = document.getElementById('menu-icon');
-
-        if (menuBtn && mobileMenu) {
-            menuBtn.addEventListener('click', () => {
-                const isHidden = mobileMenu.classList.contains('hidden');
-                if (isHidden) {
-                    mobileMenu.classList.remove('hidden');
-                    menuIcon.classList.replace('fa-bars', 'fa-times');
-                } else {
-                    mobileMenu.classList.add('hidden');
-                    menuIcon.classList.replace('fa-times', 'fa-bars');
-                }
-            });
-
-            document.querySelectorAll('.mobile-link').forEach(link => {
-                link.addEventListener('click', () => {
-                    mobileMenu.classList.add('hidden');
-                    menuIcon.classList.replace('fa-times', 'fa-bars');
-                });
-            });
-        }
-
-        // Toast Notification Helper
-        function showToast(title, message) {
-            const toast = document.getElementById('toast');
-            if (!toast) return;
-            document.getElementById('toast-title').innerText = title;
-            document.getElementById('toast-message').innerText = message;
-            toast.classList.remove('translate-y-28', 'opacity-0');
-            setTimeout(() => {
-                toast.classList.add('translate-y-28', 'opacity-0');
-            }, 3500);
-        }
-
-        // Image Modal
-        function openImageModal(src, caption) {
-            document.getElementById('modal-img').src = src;
-            document.getElementById('modal-caption').innerText = caption;
-            const modal = document.getElementById('image-modal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
-        function closeImageModal() {
-            const modal = document.getElementById('image-modal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
-
-        // Load Guests from Google Sheets
-        function loadGuests() {
-            const guestList = document.getElementById("guest-list");
-            const refreshIcon = document.getElementById("refresh-icon");
-            if (refreshIcon) refreshIcon.classList.add('fa-spin');
-
-            fetch(scriptURL + (scriptURL.includes('?') ? '&' : '?') + 'action=getGuests')
-            .then(res => res.json())
-            .then(data => {
-                if (refreshIcon) refreshIcon.classList.remove('fa-spin');
-                if (!data || data.length === 0) {
-                    guestList.innerHTML = `
-                        <div id="guest-empty-placeholder" class="glass-panel p-8 rounded-3xl border-white/10 text-center text-slate-400 text-sm">
-                            <i class="fas fa-comments text-3xl text-sky-400/50 mb-3 block"></i>
-                            <p class="font-semibold text-white mb-1">Belum Ada Kesan Pengunjung</p>
-                            <p class="text-xs text-slate-400">Jadilah yang pertama menuliskan pengalaman Anda melalui formulir di samping!</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                let html = '';
-                data.slice(0, 20).forEach(g => {
-                    const name = g.nama || 'Pengunjung';
-                    const origin = g.asal || 'Warga';
-                    const message = g.pesan || '';
-                    const ratingNum = parseInt(g.rating) || 5;
-                    const isKritik = g.tipe === 'Kritik & Saran';
-                    const stars = isKritik 
-                        ? '<span class="text-cyan-300 font-medium text-xs"><i class="fas fa-comment-dots mr-1"></i>Aspirasi</span>'
-                        : '⭐'.repeat(Math.min(5, Math.max(1, ratingNum)));
-                    const initials = (name.replace(/[()]/g, '').trim().split(/\s+/).map(n => n[0]).join('') || 'W').toUpperCase().substring(0, 2);
-                    const borderCls = isKritik ? 'border-cyan-400/25' : 'border-white/10';
-
-                    html += `
-                        <div class="glass-panel p-5 rounded-3xl ${borderCls} flex items-start space-x-4 transition hover:border-emerald-400/40">
-                            <div class="w-12 h-12 ${isKritik ? 'bg-gradient-to-br from-cyan-400 to-teal-600' : 'bg-gradient-to-br from-emerald-400 to-teal-600'} text-white font-extrabold rounded-2xl flex items-center justify-center text-lg shrink-0 shadow-md">
-                                ${initials}
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <div class="flex flex-wrap items-center justify-between gap-1 mb-1">
-                                    <h4 class="font-bold text-white text-base truncate">${name}</h4>
-                                    <div class="flex items-center space-x-2">
-                                        <span class="text-amber-400 text-xs">${stars}</span>
-                                        <span class="text-[11px] ${isKritik ? 'text-cyan-200 bg-cyan-500/20 border-cyan-500/30' : 'text-emerald-200 bg-emerald-500/20 border-emerald-500/30'} px-2.5 py-0.5 rounded-full border">${origin}</span>
-                                    </div>
-                                </div>
-                                <p class="text-emerald-100 text-sm leading-relaxed italic">"${message}"</p>
-                            </div>
-                        </div>
-                    `;
-                });
-                guestList.innerHTML = html;
-            })
-            .catch(() => {
-                if (refreshIcon) refreshIcon.classList.remove('fa-spin');
-            });
-        }
-
-        // Guestbook Form Handler
-        const guestForm = document.getElementById("guestbook-form");
-        const submitBtn = document.getElementById("submit-btn");
-
-        if (guestForm) {
-            guestForm.addEventListener("submit", function(e) {
-                e.preventDefault();
-                
-                const name = document.getElementById("guest-name").value.trim();
-                const origin = document.getElementById("guest-origin").value.trim();
-                const rating = document.getElementById("guest-rating").value;
-                const message = document.getElementById("guest-message").value.trim();
-
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Menyimpan ke Database...';
-
-                const payload = {
-                    nama: name,
-                    asal: origin,
-                    rating: rating,
-                    pesan: message,
-                    tipe: 'Buku Tamu'
-                };
-
-                const initials = (name.split(/\s+/).map(n => n[0]).join('') || 'W').toUpperCase().substring(0, 2);
-                const stars = '⭐'.repeat(parseInt(rating) || 5);
-                const newCard = document.createElement('div');
-                newCard.className = "glass-panel p-5 rounded-3xl border-emerald-400/50 glow-emerald flex items-start space-x-4";
-                newCard.innerHTML = `
-                    <div class="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-600 text-white font-extrabold rounded-2xl flex items-center justify-center text-lg shrink-0 shadow-md">
-                        ${initials}
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex flex-wrap items-center justify-between gap-1 mb-1">
-                            <h4 class="font-bold text-white text-base truncate">${name} <span class="text-xs text-emerald-300 font-normal">(Baru Saja)</span></h4>
-                            <div class="flex items-center space-x-2">
-                                <span class="text-amber-400 text-xs">${stars}</span>
-                                <span class="text-[11px] text-emerald-200 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/30">${origin}</span>
-                            </div>
-                        </div>
-                        <p class="text-emerald-100 text-sm leading-relaxed italic">"${message}"</p>
-                    </div>
-                `;
-                const guestList = document.getElementById("guest-list");
-                const placeholder = document.getElementById("guest-empty-placeholder");
-                if (placeholder) placeholder.remove();
-                guestList.insertBefore(newCard, guestList.firstChild);
-                newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-                fetch(scriptURL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(payload)
-                })
-                .then(() => {
-                    showToast('Terima Kasih!', 'Kesan Anda berhasil dicatat dan disimpan ke Google Sheet.');
-                    guestForm.reset();
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i><span>Kirim & Tampilkan Kesan Saya</span>';
-                    setTimeout(loadGuests, 3000);
-                })
-                .catch(err => {
-                    console.error('Error submitting guestbook:', err);
-                    showToast('Pemberitahuan', 'Data dicatat di layar tampilan.');
-                    guestForm.reset();
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i><span>Kirim & Tampilkan Kesan Saya</span>';
-                });
-            });
-        }
-
-        // Feedback Form Handler (Kritik & Saran)
-        const feedbackForm = document.getElementById('feedback-form');
-        const feedbackBtn = document.getElementById('feedback-submit-btn');
-
-        if (feedbackForm) {
-            feedbackForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const name = document.getElementById('feedback-name').value.trim() || 'Warga';
-                const contact = document.getElementById('feedback-contact').value.trim() || '-';
-                const message = document.getElementById('feedback-message').value.trim();
-
-                if (feedbackBtn) {
-                    feedbackBtn.disabled = true;
-                    feedbackBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Mengirim Aspirasi...';
-                }
-
-                const payload = {
-                    nama: name + (contact !== '-' ? ' (' + contact + ')' : ''),
-                    asal: 'Kritik & Saran',
-                    rating: '5',
-                    pesan: message,
-                    tipe: 'Kritik & Saran'
-                };
-
-                const initials = (name.split(/\s+/).map(n => n[0]).join('') || 'W').toUpperCase().substring(0, 2);
-                const newCard = document.createElement('div');
-                newCard.className = "glass-panel p-5 rounded-3xl border-cyan-400/50 glow-emerald flex items-start space-x-4";
-                newCard.innerHTML = `
-                    <div class="w-12 h-12 bg-gradient-to-br from-cyan-400 to-teal-600 text-white font-extrabold rounded-2xl flex items-center justify-center text-lg shrink-0 shadow-md">
-                        ${initials}
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex flex-wrap items-center justify-between gap-1 mb-1">
-                            <h4 class="font-bold text-white text-base truncate">${name} <span class="text-xs text-cyan-300 font-normal">(Baru Saja)</span></h4>
-                            <div class="flex items-center space-x-2">
-                                <span class="text-cyan-300 font-semibold text-xs"><i class="fas fa-comment-dots mr-1"></i>Aspirasi</span>
-                                <span class="text-[11px] text-teal-200 bg-teal-500/20 px-2.5 py-0.5 rounded-full border border-teal-500/30">Kritik & Saran</span>
-                            </div>
-                        </div>
-                        <p class="text-emerald-100 text-sm leading-relaxed italic">"${message}"</p>
-                    </div>
-                `;
-                const guestList = document.getElementById("guest-list");
-                guestList.insertBefore(newCard, guestList.firstChild);
-                newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-                fetch(scriptURL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(payload)
-                })
-                .then(() => {
-                    showToast('Aspirasi Diterima', 'Terima kasih atas kritik dan saran Anda untuk kemajuan Desa Pugaan!');
-                    feedbackForm.reset();
-                    if (feedbackBtn) {
-                        feedbackBtn.disabled = false;
-                        feedbackBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i><span>Kirim Masukan untuk Desa</span>';
-                    }
-                    setTimeout(loadGuests, 3000);
-                })
-                .catch(() => {
-                    showToast('Aspirasi Diterima', 'Masukan Anda telah dicatat.');
-                    feedbackForm.reset();
-                    if (feedbackBtn) {
-                        feedbackBtn.disabled = false;
-                        feedbackBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i><span>Kirim Masukan untuk Desa</span>';
-                    }
-                });
-            });
-        }
-
-        // Upload Form Handler (Foto Galeri dengan Kompresi Otomatis Canvas)
-        const uploadForm = document.getElementById('formUploadGaleri');
-        if (uploadForm) {
-            uploadForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const btn = document.getElementById('btnKirim');
-                const status = document.getElementById('statusUpload');
-                const fileInput = document.getElementById('fileFoto');
-                const file = fileInput.files[0];
-
-                if (!file) return;
-
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Mengompresi & Mengunggah...';
-                status.textContent = 'Memproses foto Anda...';
-                status.className = 'mt-4 text-center text-sm font-medium text-emerald-300';
-
-                // Kompres foto ke resolusi 1200px kualitas 0.8 JPEG agar file ringan (~150KB) & cepat
-                compressImage(file, 1200, 1200, 0.8, function(compressedDataUrl) {
-                    const rawBase64 = compressedDataUrl.split(',')[1];
-                    const namaVal = document.getElementById('namaPengirim').value.trim() || 'Warga Desa';
-                    const ketVal = document.getElementById('ketFoto').value.trim() || 'Foto Dokumentasi RTH';
-
-                    // Tampilkan langsung di halaman 1 galeri tanpa duplikat
-                    uploadedPhotos = [{
-                        nama: namaVal,
-                        keterangan: ketVal,
-                        url: compressedDataUrl
-                    }, ...uploadedPhotos.filter(p => !p.url.startsWith('data:'))];
-                    galleryPhotos = [...uploadedPhotos, ...defaultPhotos];
-                    galleryPage = 1;
-                    renderGallery();
-
-                    const galeriSec = document.getElementById('galeri');
-                    if (galeriSec) galeriSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-                    const payload = {
-                        nama: namaVal,
-                        keterangan: ketVal,
-                        fileData: rawBase64,
-                        mimeType: 'image/jpeg',
-                        fileName: (file.name || 'foto.jpg').replace(/\.[^/.]+$/, "") + '.jpg'
-                    };
-
-                    fetch(scriptURL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                        body: JSON.stringify(payload)
-                    })
-                    .then(() => {
-                        status.textContent = '✅ Foto berhasil diunggah! Masuk ke Google Drive, Sheet & tampil di Galeri.';
-                        status.className = 'mt-4 text-center text-sm font-medium text-emerald-400';
-                        showToast('Berhasil!', 'Foto Anda berhasil diunggah dan disimpan ke Drive.');
-                        uploadForm.reset();
-                        btn.disabled = false;
-                        btn.innerHTML = '🚀 Kirim Foto ke Galeri Desa';
-                        setTimeout(loadGallery, 3000);
-                    })
-                    .catch(() => {
-                        status.textContent = '✅ Foto sudah tampil di galeri.';
-                        status.className = 'mt-4 text-center text-sm font-medium text-emerald-400';
-                        uploadForm.reset();
-                        btn.disabled = false;
-                        btn.innerHTML = '🚀 Kirim Foto ke Galeri Desa';
-                    });
-                });
-            });
-        }
-
-        // Initialize on page load
-        document.addEventListener("DOMContentLoaded", function() {
-            renderGallery();
-            loadGallery();
-            loadGuests();
+        const totalPages = Math.max(1, Math.ceil(galleryPhotos.length / photosPerPage));
+        galleryPage = Math.max(1, Math.min(galleryPage, totalPages));
+        const start = (galleryPage - 1) * photosPerPage;
+        galleryPhotos.slice(start, start + photosPerPage).forEach((item, index) => {
+          const src = safeImageUrl(item.url);
+          if (!src) return;
+          const caption = String(item.keterangan || 'Foto Dokumentasi ' + (start + index + 1));
+          const uploader = item.nama ? 'Oleh: ' + item.nama : 'Dokumentasi Warga';
+          const card = document.createElement('button');
+          card.type = 'button';
+          card.className = 'glass-panel rounded-3xl p-3 border-white/15 group cursor-pointer overflow-hidden transition hover:border-emerald-400/40 text-left';
+          card.innerHTML = '<div class="aspect-video rounded-2xl overflow-hidden relative"><img class="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy"><div class="absolute inset-0 bg-gradient-to-t from-nature-950/90 via-nature-950/20 to-transparent opacity-85 group-hover:opacity-95 transition flex items-end p-5"><div class="min-w-0"><span class="text-emerald-300 text-xs font-semibold block mb-0.5"></span><h4 class="text-white font-bold text-sm sm:text-base truncate"></h4></div></div></div>';
+          const image = card.querySelector('img');
+          image.src = src;
+          image.alt = caption;
+          card.querySelector('span').textContent = uploader;
+          card.querySelector('h4').textContent = caption;
+          card.addEventListener('click', () => openImageModal(src, caption));
+          grid.appendChild(card);
         });
+        if (pagination) {
+          pagination.classList.toggle('hidden', galleryPhotos.length <= photosPerPage);
+          document.getElementById('current-page-num').textContent = galleryPage;
+          document.getElementById('total-pages-num').textContent = totalPages;
+          document.getElementById('prev-page-btn').disabled = galleryPage === 1;
+          document.getElementById('next-page-btn').disabled = galleryPage === totalPages;
+        }
+      }
+
+      function changeGalleryPage(delta) {
+        galleryPage += delta;
+        renderGallery();
+        const section = document.getElementById('galeri');
+        if (section) section.scrollIntoView({behavior: 'smooth', block: 'start'});
+      }
+
+      async function loadGallery() {
+        try {
+          const data = await rthApi({action: 'getGallery'});
+          if (!Array.isArray(data)) throw new Error('Invalid gallery response');
+          uploadedPhotos = data.filter(item => item && safeImageUrl(item.url));
+          galleryPhotos = [...uploadedPhotos, ...defaultPhotos];
+          renderGallery();
+        } catch (error) {
+          console.warn('Galeri belum termuat:', error.code || 'INVALID_RESPONSE');
+        }
+      }
+
+      function compressImage(file, maxWidth, maxHeight, quality) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onerror = () => reject(new Error('Foto tidak dapat dibaca.'));
+          reader.onload = () => {
+            const image = new Image();
+            image.onerror = () => reject(new Error('Format foto tidak dapat diproses. Gunakan JPG, PNG, atau WebP.'));
+            image.onload = () => {
+              try {
+                const scale = Math.min(1, maxWidth / image.width, maxHeight / image.height);
+                const canvas = document.createElement('canvas');
+                canvas.width = Math.max(1, Math.round(image.width * scale));
+                canvas.height = Math.max(1, Math.round(image.height * scale));
+                const context = canvas.getContext('2d');
+                if (!context) throw new Error('Browser tidak mendukung pemrosesan foto.');
+                context.fillStyle = '#ffffff';
+                context.fillRect(0, 0, canvas.width, canvas.height);
+                context.drawImage(image, 0, 0, canvas.width, canvas.height);
+                resolve(canvas.toDataURL('image/jpeg', quality));
+              } catch (error) { reject(error); }
+            };
+            image.src = reader.result;
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      const menuBtn = document.getElementById('menu-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+      const menuIcon = document.getElementById('menu-icon');
+      if (menuBtn && mobileMenu) {
+        menuBtn.addEventListener('click', () => {
+          const hidden = mobileMenu.classList.toggle('hidden');
+          if (menuIcon) menuIcon.className = hidden ? 'fas fa-bars' : 'fas fa-times';
+        });
+        document.querySelectorAll('.mobile-link').forEach(link => link.addEventListener('click', () => {
+          mobileMenu.classList.add('hidden');
+          if (menuIcon) menuIcon.className = 'fas fa-bars';
+        }));
+      }
+      let toastTimer;
+      function showToast(title, message) {
+        const toast = document.getElementById('toast');
+        if (!toast) return;
+        document.getElementById('toast-title').textContent = title;
+        document.getElementById('toast-message').textContent = message;
+        toast.classList.remove('translate-y-28', 'opacity-0');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.add('translate-y-28', 'opacity-0'), 5000);
+      }
+      function openImageModal(src, caption) {
+        const url = safeImageUrl(src);
+        if (!url) return;
+        document.getElementById('modal-img').src = url;
+        document.getElementById('modal-caption').textContent = caption;
+        const modal = document.getElementById('image-modal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+      function closeImageModal() {
+        const modal = document.getElementById('image-modal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+
+      async function loadGuests() {
+        const list = document.getElementById('guest-list');
+        const icon = document.getElementById('refresh-icon');
+        if (!list) return;
+        if (icon) icon.classList.add('fa-spin');
+        try {
+          const data = await rthApi({action: 'getGuests'});
+          if (!Array.isArray(data)) throw new Error('Invalid guest response');
+          if (!data.length) {
+            list.innerHTML = '<div id="guest-empty-placeholder" class="glass-panel p-8 rounded-3xl border-white/10 text-center text-slate-400 text-sm"><i class="fas fa-comments text-3xl text-sky-400/50 mb-3 block"></i><p class="font-semibold text-white mb-1">Belum Ada Kesan Pengunjung</p><p class="text-xs text-slate-400">Tuliskan pengalaman Anda melalui formulir di samping.</p></div>';
+            return;
+          }
+          list.innerHTML = data.slice(0, 20).map(guest => {
+            const name = String(guest.nama || 'Pengunjung');
+            const initials = (name.trim().split(/\s+/).map(part => part[0] || '').join('') || 'W').toUpperCase().slice(0, 2);
+            const isFeedback = guest.tipe === 'Kritik & Saran';
+            const stars = isFeedback ? '<i class="fas fa-comment-dots"></i> Aspirasi' : '&#9733;'.repeat(Math.min(5, Math.max(1, parseInt(guest.rating, 10) || 5)));
+            return `<div class="glass-panel p-5 rounded-3xl border-white/10 flex items-start space-x-4 transition hover:border-emerald-400/40"><div class="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-600 text-white font-extrabold rounded-2xl flex items-center justify-center text-lg shrink-0 shadow-md">${escapeHtml(initials)}</div><div class="flex-1 min-w-0"><div class="flex flex-wrap items-center justify-between gap-1 mb-1"><h4 class="font-bold text-white text-base truncate">${escapeHtml(name)}</h4><div class="flex items-center space-x-2"><span class="text-amber-400 text-xs">${stars}</span><span class="text-[11px] text-emerald-200 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-500/30">${escapeHtml(guest.asal || 'Warga')}</span></div></div><p class="text-emerald-100 text-sm leading-relaxed italic">&quot;${escapeHtml(guest.pesan || '')}&quot;</p></div></div>`;
+          }).join('');
+        } catch (error) {
+          console.warn('Buku tamu belum termuat:', error.code || 'INVALID_RESPONSE');
+        } finally { if (icon) icon.classList.remove('fa-spin'); }
+      }
+
+      function wireGuestForm(formId, buttonId, makePayload) {
+        const form = document.getElementById(formId);
+        const button = document.getElementById(buttonId);
+        if (!form || !button) return;
+        form.addEventListener('submit', async event => {
+          event.preventDefault();
+          if (button.disabled) return;
+          const oldLabel = button.innerHTML;
+          button.disabled = true;
+          button.textContent = 'Menyimpan...';
+          try {
+            const result = await rthApi(Object.assign({action: 'submitGuest'}, makePayload()));
+            if (result.status !== 'success') throw new Error('Server belum mengonfirmasi penyimpanan.');
+            showToast('Berhasil disimpan', result.message || 'Terima kasih atas masukan Anda.');
+            form.reset();
+            await loadGuests();
+          } catch (error) {
+            showToast('Belum terkonfirmasi', error.message || 'Data belum tersimpan. Silakan coba lagi.');
+          } finally { button.disabled = false; button.innerHTML = oldLabel; }
+        });
+      }
+      wireGuestForm('guestbook-form', 'submit-btn', () => ({
+        nama: document.getElementById('guest-name').value.trim(),
+        asal: document.getElementById('guest-origin').value.trim(),
+        rating: document.getElementById('guest-rating').value,
+        pesan: document.getElementById('guest-message').value.trim(),
+        tipe: 'Buku Tamu'
+      }));
+      wireGuestForm('feedback-form', 'feedback-submit-btn', () => ({
+        nama: document.getElementById('feedback-name').value.trim() || 'Warga',
+        kontak: document.getElementById('feedback-contact').value.trim(),
+        asal: 'Kritik & Saran', rating: '5',
+        pesan: document.getElementById('feedback-message').value.trim(), tipe: 'Kritik & Saran'
+      }));
+
+      const uploadForm = document.getElementById('formUploadGaleri');
+      if (uploadForm) uploadForm.addEventListener('submit', async event => {
+        event.preventDefault();
+        const button = document.getElementById('btnKirim');
+        const status = document.getElementById('statusUpload');
+        const file = document.getElementById('fileFoto').files[0];
+        if (!file || button.disabled) return;
+        const oldLabel = button.innerHTML;
+        button.disabled = true;
+        button.textContent = 'Memproses foto...';
+        status.textContent = 'Mengompresi dan mengirim foto ke server...';
+        status.className = 'mt-4 text-center text-sm font-medium text-emerald-300';
+        try {
+          if (file.size > 20 * 1024 * 1024) throw new Error('Pilih foto sumber berukuran maksimal 20 MB.');
+          const compressed = await compressImage(file, 1200, 1200, 0.8);
+          const result = await rthApi({
+            action: 'uploadPhoto',
+            nama: document.getElementById('namaPengirim').value.trim() || 'Warga Desa',
+            keterangan: document.getElementById('ketFoto').value.trim() || 'Dokumentasi RTH',
+            fileData: compressed.split(',')[1], mimeType: 'image/jpeg',
+            fileName: (file.name || 'foto').replace(/\.[^/.]+$/, '') + '.jpg'
+          });
+          if (result.status !== 'success') throw new Error('Server belum mengonfirmasi penyimpanan foto.');
+          status.textContent = 'Foto berhasil disimpan ke Drive dan database galeri.';
+          showToast('Foto disimpan', 'Terima kasih telah membagikan dokumentasi.');
+          uploadForm.reset();
+          galleryPage = 1;
+          await loadGallery();
+        } catch (error) {
+          status.textContent = 'Unggahan belum terkonfirmasi: ' + (error.message || 'Periksa koneksi dan coba lagi.');
+          status.className = 'mt-4 text-center text-sm font-medium text-amber-300';
+        } finally { button.disabled = false; button.innerHTML = oldLabel; }
+      });
+      document.addEventListener('DOMContentLoaded', () => {
+        renderGallery();
+        loadGallery();
+        loadGuests();
+      });
     </script>
 
+
     <!-- ========================================== -->
-    <!-- WIDGET CHAT RTH AI 100% GRATIS & PINTAR      -->
+    <!-- WIDGET CHAT RTH - GEMINI MELALUI BACKEND    -->
     <!-- ========================================== -->
 
-    <!-- Import Puter.js (Free In-Browser AI Engine - Tanpa API Key & Tanpa Biaya) -->
-    <script src="https://js.puter.com/v2/"></script>
+    <!-- Gemini diakses lewat server; tidak ada SDK AI pihak ketiga di browser. -->
 
     <style>
       /* Wadah Tombol Launcher Chat di Kanan Bawah */
@@ -1867,22 +1735,37 @@
         justify-content: center;
         gap: 4px;
       }
+
+      #rth-chat-messages { min-height: 0; }
+      .rth-chat-header, .rth-chat-input-box { flex-shrink: 0; }
+      #rth-chat-input { min-width: 0; }
+      #rth-chat-window button:disabled { opacity: 0.5; cursor: not-allowed; }
+      .rth-service-status { font-size: 10px; line-height: 1.4; margin-bottom: 6px; color: #cbd5e1; overflow-wrap: anywhere; }
+      .rth-service-status[data-state="error"] { color: #fcd34d; }
+      .rth-service-status[data-state="success"] { color: #6ee7b7; }
+      .rth-msg-source { display: block; font-size: 9px; line-height: 1.5; color: #a5b4c6; margin-top: 7px; }
+      .rth-privacy-note { color: #a5b4c6; font-size: 9px; line-height: 1.35; text-align: center; margin: 6px 0 0; }
+      @supports (height: 100dvh) { #rth-chat-window { max-height: calc(100dvh - 100px); } }
+      @media (max-width: 420px) {
+        #rth-chat-window { right: 12px; max-width: calc(100vw - 24px); }
+        #rth-chat-input { font-size: 16px; }
+      }
     </style>
 
     <!-- Floating Launcher -->
     <div class="rth-ai-launcher">
-      <div class="rth-ai-badge" id="rth-badge-toggle">
+      <div class="rth-ai-badge" id="rth-badge-toggle" role="button" tabindex="0" aria-controls="rth-chat-window" aria-expanded="false">
         <i class="fas fa-sparkles text-amber-300"></i>
         <span>Tanya AI Gratis</span>
       </div>
-      <button id="rth-chat-toggle" class="rth-ai-btn" title="Buka Asisten AI RTH">
+      <button id="rth-chat-toggle" aria-controls="rth-chat-window" aria-expanded="false" class="rth-ai-btn" title="Buka Asisten AI RTH">
         <div class="rth-online-dot"></div>
         <i class="fas fa-robot text-xl"></i>
       </button>
     </div>
 
     <!-- Jendela Chatbot AI -->
-    <div id="rth-chat-window">
+    <div id="rth-chat-window" role="dialog" aria-label="Asisten RTH Smart" aria-hidden="true">
       <!-- Header -->
       <div class="rth-chat-header">
         <div class="flex items-center gap-2.5">
@@ -1904,7 +1787,7 @@
       </div>
 
       <!-- Messages List -->
-      <div id="rth-chat-messages">
+      <div id="rth-chat-messages" role="log" aria-live="polite" aria-relevant="additions" aria-label="Percakapan">
         <!-- Welcome Message -->
         <div class="rth-msg rth-msg-ai">
           <p>Halo <strong>Pian</strong>! Selamat datang di <strong>RTH Smart Desa Pugaan</strong>. 🌿</p>
@@ -1927,20 +1810,23 @@
 
       <!-- Input Area -->
       <div class="rth-chat-input-box">
+        <div id="rth-service-status" class="rth-service-status" role="status">Siap mengirim ke Gemini</div>
         <div class="rth-input-wrapper">
-          <input type="text" id="rth-chat-input" placeholder="Tanyakan seputar RTH Smart..." autocomplete="off">
+          <input type="text" id="rth-chat-input" maxlength="2000" aria-label="Tulis pesan" placeholder="Tanyakan seputar RTH Smart..." autocomplete="off">
           <button id="rth-send-btn" title="Kirim Pesan">
             <i class="fas fa-paper-plane"></i>
           </button>
         </div>
         <div class="rth-chat-footer-badge">
           <i class="fas fa-bolt text-amber-400"></i>
-          <span>100% Bebas Biaya • AI Virtual Desa Pugaan</span>
+          <span>Gemini via server &bull; Tanpa login pengunjung</span>
         </div>
+        <p class="rth-privacy-note">Pesan dan konteks chat dikirim ke Google Gemini. Jangan kirim data pribadi atau rahasia.</p>
       </div>
     </div>
 
-    <!-- Logika JavaScript Multi-Provider Free AI Chatbot -->
+
+    <!-- Gemini langsung: tidak ada login, popup, atau redirect AI dari widget -->
     <script>
       (function() {
         const chatToggle = document.getElementById('rth-chat-toggle');
@@ -1950,96 +1836,93 @@
         const clearBtn = document.getElementById('rth-clear-chat');
         const sendBtn = document.getElementById('rth-send-btn');
         const chatInput = document.getElementById('rth-chat-input');
-        const messagesContainer = document.getElementById('rth-chat-messages');
+        const messages = document.getElementById('rth-chat-messages');
+        const serviceStatus = document.getElementById('rth-service-status');
+        const initialWelcome = messages.innerHTML;
+        // Konteks disimpan hanya di memori tab, bukan localStorage atau Google Sheets.
+        let chatHistory = [];
+        let isSending = false;
+        let blockedUntil = 0;
 
-        // URL Backend Google Apps Script (Opsional / Terhubung ke Sheet)
-        const AI_BACKEND_URL = "https://script.google.com/macros/s/AKfycbxsxTao2_2zAF8I_6rF8jQ0_SFCPQrJIjw5_1p7pEH2fqcUsOdheagQtW0y2uR2teIPeQ/exec";
-
-        // Knowledge Base Prompt untuk AI Gratis
-        const SYSTEM_PROMPT = `Anda adalah 'Asisten RTH', asisten virtual cerdas, ramah, santun, dan informatif untuk Ruang Terbuka Hijau (RTH) Smart Desa Pugaan, Kecamatan Pugaan, Kabupaten Tabalong, Kalimantan Selatan.
-Informasi Lengkap RTH Smart Desa Pugaan:
-1. Lokasi: Desa Pugaan, Kecamatan Pugaan, Kabupaten Tabalong, Kalimantan Selatan.
-2. Jam Buka: Kawasan RTH buka 24 JAM GRATIS setiap hari untuk umum. Cafe BUMDes buka pukul 08.00 - 22.00 WITA.
-3. Fasilitas: WiFi publik gratis kecepatan hingga 100 Mbps fiber optic 24 jam tanpa sandi rumit; CCTV pemantau keamanan 24 jam; area bermain anak ramah balita dan higienis; pojok baca literasi digital & buku gratis; gazebo santai dengan colokan stopkontak listrik; taman bunga asri & biopori resapan air; Cafe BUMDes kuliner lokal (Kopi Hitam Pugaan Rp 10.000, Es Jeruk Rp 8.000, camilan kue UMKM mulai Rp 5.000, WA BUMDes: 0857-5349-6613); toilet bersih dan spot foto estetik.
-4. Fitur Web: Buku Tamu online, kotak Kritik & Saran, dan Galeri Foto dokumentasi warga.
-5. Gaya Komunikasi: Sopan, ramah, bersahabat, bahasa Indonesia yang baik, boleh sesekali menyapa dengan kata Banjar sopan seperti 'Ulun' (saya) dan 'Pian' (Anda). Gunakan format ringkas, rapi dengan bullet points bila perlu.`;
-
-        let chatHistory = [
-          { role: "system", content: SYSTEM_PROMPT }
-        ];
-
-        // Buka / Tutup Chat Window
-        function toggleChat() {
-          const isVisible = chatWindow.style.display === 'flex';
-          chatWindow.style.display = isVisible ? 'none' : 'flex';
-          if (!isVisible) {
-            chatInput.focus();
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-          }
+        function setStatus(text, state) {
+          serviceStatus.textContent = text;
+          serviceStatus.dataset.state = state || 'ready';
         }
-
+        function setOpen(open) {
+          chatWindow.style.display = open ? 'flex' : 'none';
+          chatWindow.setAttribute('aria-hidden', String(!open));
+          chatToggle.setAttribute('aria-expanded', String(open));
+          badgeToggle.setAttribute('aria-expanded', String(open));
+          if (open && !isSending) chatInput.focus();
+          if (open) messages.scrollTop = messages.scrollHeight;
+        }
+        function toggleChat() { setOpen(chatWindow.style.display !== 'flex'); }
         chatToggle.addEventListener('click', toggleChat);
         badgeToggle.addEventListener('click', toggleChat);
-        closeBtn.addEventListener('click', () => { chatWindow.style.display = 'none'; });
-
-        // Bersihkan Chat History
-        clearBtn.addEventListener('click', () => {
-          chatHistory = [{ role: "system", content: SYSTEM_PROMPT }];
-          messagesContainer.innerHTML = `
-            <div class="rth-msg rth-msg-ai">
-              <p>Percakapan telah dibersihkan. Halo <strong>Pian</strong>! Ada yang bisa ulun bantu seputar <strong>RTH Smart Desa Pugaan</strong>?</p>
-              <div class="rth-chips-wrapper">
-                <div class="rth-chips-title">Pertanyaan Cepat:</div>
-                <div class="rth-chips-container">
-                  <button class="rth-chip" onclick="askRthAi('Fasilitas apa saja yang ada di RTH Smart Pugaan?')">🌿 Fasilitas RTH</button>
-                  <button class="rth-chip" onclick="askRthAi('Kapan jam operasional taman dan Cafe BUMDes?')">🕒 Jam Operasional</button>
-                  <button class="rth-chip" onclick="askRthAi('Bagaimana cara akses WiFi gratis di RTH?')">📶 WiFi Gratis</button>
-                  <button class="rth-chip" onclick="askRthAi('Apa saja menu dan harga di Cafe BUMDes?')">☕ Menu Cafe</button>
-                  <button class="rth-chip" onclick="askRthAi('Dimana lokasi persis RTH Smart Desa Pugaan?')">📍 Lokasi RTH</button>
-                  <button class="rth-chip" onclick="askRthAi('Bagaimana cara mengunggah foto ke galeri?')">📸 Unggah Foto</button>
-                </div>
-              </div>
-            </div>
-          `;
+        badgeToggle.addEventListener('keydown', event => {
+          if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggleChat(); }
         });
-
-        // Helper Format Markdown ke HTML Sederhana
+        closeBtn.addEventListener('click', () => { setOpen(false); chatToggle.focus(); });
+        chatWindow.addEventListener('keydown', event => {
+          if (event.key === 'Escape') { setOpen(false); chatToggle.focus(); }
+        });
+        clearBtn.addEventListener('click', () => {
+          if (isSending) return;
+          chatHistory = [];
+          messages.innerHTML = initialWelcome;
+          setStatus('Percakapan dibersihkan. Siap mengirim ke Gemini.');
+          chatInput.focus();
+        });
+        function setBusy(busy) {
+          isSending = busy;
+          chatInput.disabled = busy;
+          sendBtn.disabled = busy;
+          // Mencegah balasan lama masuk ke percakapan yang baru dibersihkan.
+          clearBtn.disabled = busy;
+          messages.querySelectorAll('.rth-chip').forEach(button => { button.disabled = busy; });
+          chatWindow.setAttribute('aria-busy', String(busy));
+        }
         function formatMarkdown(text) {
-          if (!text) return "";
-          let html = text
-            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em>$1</em>')
-            .replace(/\n\n/g, '<br><br>')
+          // Escape HTML SEBELUM markup ringan: teks model tidak boleh menjadi skrip.
+          return escapeHtml(text)
+            .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
+            .replace(/`([^`\n]+)`/g, '<code>$1</code>')
             .replace(/\n/g, '<br>');
-          return html;
         }
-
-        // Append Message to UI
-        function appendMsg(role, text) {
-          const msgDiv = document.createElement('div');
-          msgDiv.className = role === 'user' ? 'rth-msg rth-msg-user' : 'rth-msg rth-msg-ai';
-          msgDiv.innerHTML = formatMarkdown(text);
-          messagesContainer.appendChild(msgDiv);
-          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        function appendMsg(role, text, source) {
+          const bubble = document.createElement('div');
+          bubble.className = role === 'user' ? 'rth-msg rth-msg-user' : 'rth-msg rth-msg-ai';
+          const content = document.createElement('div');
+          content.innerHTML = formatMarkdown(text);
+          bubble.appendChild(content);
+          if (source) {
+            const label = document.createElement('small');
+            label.className = 'rth-msg-source';
+            label.textContent = source;
+            bubble.appendChild(label);
+          }
+          messages.appendChild(bubble);
+          // Batasi node di percakapan panjang tanpa mengubah konteks server.
+          const bubbles = messages.querySelectorAll('.rth-msg');
+          if (bubbles.length > 61) bubbles[1].remove();
+          messages.scrollTop = messages.scrollHeight;
         }
-
-        // Typing Indicator
         function showTyping() {
-          const typingDiv = document.createElement('div');
-          typingDiv.id = 'rth-typing-indicator';
-          typingDiv.className = 'rth-typing';
-          typingDiv.innerHTML = '<div class="rth-dot"></div><div class="rth-dot"></div><div class="rth-dot"></div>';
-          messagesContainer.appendChild(typingDiv);
-          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+          const typing = document.createElement('div');
+          typing.id = 'rth-typing-indicator';
+          typing.className = 'rth-typing';
+          typing.setAttribute('aria-label', 'Gemini sedang memproses pesan');
+          typing.innerHTML = '<div class="rth-dot"></div><div class="rth-dot"></div><div class="rth-dot"></div>';
+          messages.appendChild(typing);
+          messages.scrollTop = messages.scrollHeight;
         }
-
         function hideTyping() {
-          const typingDiv = document.getElementById('rth-typing-indicator');
-          if (typingDiv) typingDiv.remove();
+          const typing = document.getElementById('rth-typing-indicator');
+          if (typing) typing.remove();
         }
 
-        // Smart Local Knowledge Engine (100% Free & Offline-Ready Fallback)
+        // Cadangan dari data pengelola. INI BUKAN AI dan selalu diberi label demikian.
         function getLocalKnowledgeReply(query) {
           const q = query.toLowerCase();
           if (q.match(/(fasilitas|fitur|sarana|ada apa|keunggulan)/)) {
@@ -2053,19 +1936,19 @@ Informasi Lengkap RTH Smart Desa Pugaan:
               "7. **Cafe BUMDes & Sentra UMKM** dengan kopi khas dan jajanan lokal.\n" +
               "8. **Toilet Bersih & Spot Foto Instagramable**.";
           }
-          if (q.match(/(jam|buka|tutup|operasional|waktu|kapan)/)) {
+          if (q.match(/(jam buka|jam operasional|jam tutup|operasional|buka.*(?:taman|rth|cafe)|(?:taman|rth|cafe).*buka)/)) {
             return "🕒 **Jam Operasional RTH Smart Desa Pugaan:**\n" +
               "- **Kawasan Taman RTH:** Buka **24 Jam Setiap Hari** (Gratis untuk umum).\n" +
               "- **Cafe BUMDes RTH:** Buka pukul **08.00 - 22.00 WITA**.\n" +
               "Pian dapat berkunjung kapan saja bersama keluarga untuk bersantai, belajar, atau berolahraga.";
           }
-          if (q.match(/(wifi|internet|kuota|sandi|password|koneksi)/)) {
+          if (q.match(/(wifi|wi-fi|internet.*rth|sandi.*wifi|password.*wifi)/)) {
             return "📶 **Fasilitas WiFi Gratis RTH Smart:**\n" +
               "- Internet nirkabel super cepat hingga **100 Mbps** berbasis fiber optic.\n" +
               "- **100% Gratis 24 Jam** untuk seluruh pengunjung tanpa sandi yang rumit.\n" +
               "- Sangat cocok untuk mengerjakan tugas sekolah, kuliah, maupun santai browsing.";
           }
-          if (q.match(/(lokasi|alamat|dimana|tempat|peta|rute|arah)/)) {
+          if (q.match(/(lokasi.*rth|alamat.*rth|dimana.*rth|di mana.*rth|lokasi.*pugaan|rute.*rth)/)) {
             return "📍 **Lokasi RTH Smart Desa Pugaan:**\n" +
               "- Terletak di **Desa Pugaan, Kecamatan Pugaan, Kabupaten Tabalong, Kalimantan Selatan**.\n" +
               "- Mudah dijangkau dan berada di pusat aktivitas masyarakat Pugaan dengan area parkir yang nyaman.";
@@ -2077,7 +1960,7 @@ Informasi Lengkap RTH Smart Desa Pugaan:
               "- **Aneka Camilan UMKM:** Mulai Rp 5.000 (Gorengan renyah & kue tradisional)\n" +
               "Pemesanan langsung via WhatsApp BUMDes: **0857-5349-6613**.";
           }
-          if (q.match(/(foto|galeri|unggah|upload|gambar|dokumentasi)/)) {
+          if (q.match(/\b(foto(?:nya)?|galeri|(?:meng)?unggah|upload|gambar|dokumentasi)\b/)) {
             return "📸 **Galeri Dokumentasi Warga:**\n" +
               "Pian bisa mengabadikan momen di RTH Smart dan mengunggahnya melalui formulir **Unggah Foto Warga** di website ini. Foto akan langsung tersimpan di Google Drive dan tampil di galeri!";
           }
@@ -2085,103 +1968,59 @@ Informasi Lengkap RTH Smart Desa Pugaan:
             return "✍️ **Buku Tamu & Kotak Kritik Saran:**\n" +
               "Silakan sampaikan kesan kunjungan Pian pada formulir **Buku Tamu Digital** atau beri masukan pembangunan di form **Kritik & Saran** pada halaman web ini.";
           }
-          if (q.match(/(halo|hai|selamat|pagi|siang|sore|malam|assalam|salam|ulun|pian)/)) {
+          if (q.match(/^(halo|hai|selamat pagi|selamat siang|selamat sore|selamat malam|assalamualaikum|salam)[!.?\s]*$/)) {
             return "Halo Pian! Selamat datang di **RTH Smart Desa Pugaan**, Kabupaten Tabalong. Ulun asisten virtual siap membantu informasi seputar fasilitas, jam buka, WiFi gratis, Cafe BUMDes, dan dokumentasi. Ada yang bisa ulun bantu?";
           }
           return null;
         }
 
-        // Mesin AI Gratis Utama (Multi-Tier Architecture)
-        async function getFreeAIResponse(userText) {
-          // Tier 1: Puter.js Free AI Engine (Zero Setup & 100% Free di Browser)
-          if (typeof puter !== 'undefined' && puter.ai) {
-            try {
-              const messages = [...chatHistory, { role: "user", content: userText }];
-              const res = await puter.ai.chat(messages, {
-                model: 'gpt-4o-mini',
-                temperature: 0.4
-              });
-              const replyText = typeof res === 'string' ? res : (res && res.message && res.message.content ? res.message.content : res.toString());
-              if (replyText && replyText.trim() !== '') {
-                return replyText.trim();
-              }
-            } catch (puterErr) {
-              console.warn("Puter.js AI engine fallback:", puterErr);
-            }
-          }
-
-          // Tier 2: Backend Google Apps Script (Gemini 2.0/1.5 Flash Free Tier)
-          if (AI_BACKEND_URL && AI_BACKEND_URL.startsWith('http')) {
-            try {
-              const response = await fetch(AI_BACKEND_URL, {
-                method: 'POST',
-                body: JSON.stringify({ message: userText, action: 'chat' }),
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-              });
-              const data = await response.json();
-              if (data && data.reply && data.status !== 'error') {
-                return data.reply;
-              }
-            } catch (fetchErr) {
-              console.warn("Backend Apps Script fallback:", fetchErr);
-            }
-          }
-
-          // Tier 3: Smart Local Knowledge Engine
-          const localReply = getLocalKnowledgeReply(userText);
-          if (localReply) {
-            return localReply;
-          }
-
-          return "Halo Pian! Ulun Asisten Virtual RTH Smart Desa Pugaan. RTH kami menyediakan fasilitas lengkap: WiFi gratis 24 jam, CCTV keamanan, area bermain anak, pojok baca, gazebo colokan listrik, serta Cafe BUMDes. Ada hal spesifik yang ingin Pian tanyakan seputar fasilitas, jam buka, atau lokasi?";
-        }
-
-        // Handle Send Message
         async function handleSendMessage(customText) {
-          const text = (customText || chatInput.value).trim();
+          if (isSending) return;
+          const text = String(typeof customText === 'string' ? customText : chatInput.value).trim();
           if (!text) return;
-
+          if (text.length > 2000) { setStatus('Pesan maksimal 2.000 karakter.', 'error'); return; }
+          if (blockedUntil > Date.now()) {
+            setStatus('Batas sementara: coba lagi dalam ' + Math.ceil((blockedUntil - Date.now()) / 1000) + ' detik.', 'error');
+            return;
+          }
           appendMsg('user', text);
-          if (!customText) chatInput.value = '';
-          chatInput.disabled = true;
-          sendBtn.disabled = true;
-
+          if (typeof customText !== 'string') chatInput.value = '';
+          setBusy(true);
+          setStatus('Menghubungkan ke Gemini...');
           showTyping();
-
           try {
-            const aiReply = await getFreeAIResponse(text);
-            hideTyping();
-            appendMsg('ai', aiReply);
-
-            // Simpan ke riwayat percakapan
-            chatHistory.push({ role: "user", content: text });
-            chatHistory.push({ role: "assistant", content: aiReply });
-            if (chatHistory.length > 15) {
-              chatHistory = [chatHistory[0], ...chatHistory.slice(-10)];
+            const data = await rthApi({action: 'chat', message: text, history: chatHistory.slice(-12)});
+            if (data.status !== 'success' || data.provider !== 'Gemini' || typeof data.reply !== 'string' || !data.reply.trim()) {
+              throw rthError('BACKEND_VERSION', 'Backend belum memakai versi Gemini langsung. Perbarui deployment Code.gs terlebih dahulu.');
             }
-          } catch (err) {
             hideTyping();
-            appendMsg('ai', "Maaf Pian, terjadi sedikit kendala koneksi. Namun Pian tetap bisa menanyakan informasi umum seputar fasilitas, jam buka, WiFi, dan lokasi RTH Smart.");
+            appendMsg('ai', data.reply, 'Gemini | ' + (data.model || 'AI'));
+            if (data.partial) appendMsg('ai', 'Jawaban terpotong oleh batas panjang. Ketik "lanjutkan" untuk meminta kelanjutannya.', 'Pemberitahuan aplikasi');
+            // Hanya jawaban asli Gemini yang dimasukkan ke konteks model berikutnya.
+            chatHistory.push({role: 'user', content: text}, {role: 'assistant', content: data.reply.slice(0, 2000)});
+            chatHistory = chatHistory.slice(-12);
+            setStatus('Dijawab oleh Gemini. Silakan lanjut bertanya.', 'success');
+          } catch (error) {
+            hideTyping();
+            if (error.retryAfterSeconds > 0) blockedUntil = Date.now() + error.retryAfterSeconds * 1000;
+            const local = error.code === 'GEMINI_SAFETY' ? null : getLocalKnowledgeReply(text);
+            const notice = error.message || 'Balasan Gemini belum tersedia. Coba lagi nanti.';
+            appendMsg('ai', notice + (local ? '\n\nBerikut informasi tersimpan dari pengelola (bukan jawaban AI):\n\n' + local : ''),
+              local ? 'Informasi lokal - bukan AI' : 'Pemberitahuan - bukan jawaban AI');
+            setStatus(local ? 'Mode informasi lokal | ' + (error.code || 'ERROR') : 'Gemini belum tersedia | ' + (error.code || 'ERROR'), 'error');
           } finally {
-            chatInput.disabled = false;
-            sendBtn.disabled = false;
-            chatInput.focus();
+            hideTyping();
+            setBusy(false);
+            if (chatWindow.style.display === 'flex') chatInput.focus();
           }
         }
-
-        // Global function untuk tombol chip pertanyaan cepat
-        window.askRthAi = function(question) {
-          handleSendMessage(question);
-        };
-
+        window.askRthAi = function(question) { setOpen(true); handleSendMessage(question); };
         sendBtn.addEventListener('click', () => handleSendMessage());
-        chatInput.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            handleSendMessage();
-          }
+        chatInput.addEventListener('keydown', event => {
+          if (event.key === 'Enter' && !event.isComposing) { event.preventDefault(); handleSendMessage(); }
         });
       })();
     </script>
+
 </body>
 </html>
