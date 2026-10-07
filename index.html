@@ -1498,208 +1498,690 @@
             loadGuests();
         });
     </script>
+
+    <!-- ========================================== -->
+    <!-- WIDGET CHAT RTH AI 100% GRATIS & PINTAR      -->
+    <!-- ========================================== -->
+
+    <!-- Import Puter.js (Free In-Browser AI Engine - Tanpa API Key & Tanpa Biaya) -->
+    <script src="https://js.puter.com/v2/"></script>
+
+    <style>
+      /* Wadah Tombol Launcher Chat di Kanan Bawah */
+      .rth-ai-launcher {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+      }
+
+      /* Badge Mengambang "Tanya AI Gratis" */
+      .rth-ai-badge {
+        background: linear-gradient(135deg, #059669 0%, #0284c7 100%);
+        color: #ffffff;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 4px 15px rgba(2, 132, 199, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        animation: rthFloat 3s ease-in-out infinite;
+      }
+
+      .rth-ai-badge:hover {
+        transform: translateY(-2px) scale(1.03);
+        box-shadow: 0 6px 20px rgba(5, 150, 105, 0.45);
+      }
+
+      @keyframes rthFloat {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-4px); }
+      }
+
+      /* Tombol Utama Chatbot */
+      .rth-ai-btn {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        border: 2px solid #38bdf8;
+        color: #38bdf8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 15px rgba(56, 189, 248, 0.25);
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+      }
+
+      .rth-ai-btn:hover {
+        transform: scale(1.08) rotate(5deg);
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        border-color: #34d399;
+        color: #34d399;
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5), 0 0 20px rgba(52, 211, 153, 0.4);
+      }
+
+      .rth-ai-btn .rth-online-dot {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        width: 13px;
+        height: 13px;
+        background: #10b981;
+        border: 2px solid #0f172a;
+        border-radius: 50%;
+        animation: rthPulse 2s infinite;
+      }
+
+      @keyframes rthPulse {
+        0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+        70% { box-shadow: 0 0 0 7px rgba(16, 185, 129, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+      }
+
+      /* Jendela Kotak Chat AI */
+      #rth-chat-window {
+        position: fixed;
+        bottom: 84px;
+        right: 20px;
+        width: 360px;
+        max-width: calc(100vw - 28px);
+        height: 520px;
+        max-height: calc(100vh - 100px);
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(56, 189, 248, 0.25);
+        border-radius: 18px;
+        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.55), 0 0 25px rgba(56, 189, 248, 0.15);
+        display: none;
+        flex-direction: column;
+        overflow: hidden;
+        z-index: 10000;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        animation: rthSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      @keyframes rthSlideUp {
+        from { opacity: 0; transform: translateY(20px) scale(0.95); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+
+      /* Header Chat */
+      .rth-chat-header {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 12px 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .rth-chat-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #0284c7 0%, #059669 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        font-size: 16px;
+        box-shadow: 0 2px 10px rgba(2, 132, 199, 0.3);
+      }
+
+      .rth-header-actions button {
+        background: transparent;
+        border: none;
+        color: #94a3b8;
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .rth-header-actions button:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #ffffff;
+      }
+
+      /* Area Konten Pesan */
+      #rth-chat-messages {
+        flex: 1;
+        padding: 14px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        background: radial-gradient(circle at top right, rgba(2, 132, 199, 0.05), transparent 70%),
+                    radial-gradient(circle at bottom left, rgba(5, 150, 105, 0.05), transparent 70%);
+      }
+
+      /* Scrollbar Halus */
+      #rth-chat-messages::-webkit-scrollbar {
+        width: 5px;
+      }
+      #rth-chat-messages::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 4px;
+      }
+
+      /* Bubble Pesan */
+      .rth-msg {
+        max-width: 88%;
+        padding: 9px 13px;
+        border-radius: 14px;
+        font-size: 12.5px;
+        line-height: 1.45;
+        word-break: break-word;
+      }
+
+      .rth-msg-user {
+        align-self: flex-end;
+        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+        color: #ffffff;
+        border-bottom-right-radius: 3px;
+        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+      }
+
+      .rth-msg-ai {
+        align-self: flex-start;
+        background: rgba(30, 41, 59, 0.85);
+        color: #f1f5f9;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-bottom-left-radius: 3px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+
+      .rth-msg-ai p {
+        margin-bottom: 6px;
+      }
+      .rth-msg-ai p:last-child {
+        margin-bottom: 0;
+      }
+      .rth-msg-ai strong {
+        color: #38bdf8;
+        font-weight: 600;
+      }
+      .rth-msg-ai ul, .rth-msg-ai ol {
+        margin: 4px 0;
+        padding-left: 18px;
+      }
+      .rth-msg-ai li {
+        margin-bottom: 3px;
+      }
+
+      /* Chip Saran Pertanyaan Populer */
+      .rth-chips-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-top: 4px;
+      }
+
+      .rth-chips-title {
+        font-size: 10px;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        margin-bottom: 2px;
+      }
+
+      .rth-chips-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .rth-chip {
+        background: rgba(30, 41, 59, 0.9);
+        border: 1px solid rgba(56, 189, 248, 0.2);
+        color: #e2e8f0;
+        font-size: 11px;
+        padding: 4px 10px;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .rth-chip:hover {
+        background: rgba(2, 132, 199, 0.25);
+        border-color: #38bdf8;
+        color: #ffffff;
+        transform: translateY(-1px);
+      }
+
+      /* Indikator Animasi Sedang Mengetik */
+      .rth-typing {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 8px 12px;
+        background: rgba(30, 41, 59, 0.85);
+        border-radius: 12px;
+        align-self: flex-start;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .rth-dot {
+        width: 6px;
+        height: 6px;
+        background: #38bdf8;
+        border-radius: 50%;
+        animation: rthWave 1.3s infinite ease-in-out;
+      }
+      .rth-dot:nth-child(2) { animation-delay: 0.2s; }
+      .rth-dot:nth-child(3) { animation-delay: 0.4s; }
+
+      @keyframes rthWave {
+        0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+        30% { transform: translateY(-5px); opacity: 1; }
+      }
+
+      /* Area Input Form */
+      .rth-chat-input-box {
+        padding: 10px 12px 12px;
+        background: rgba(15, 23, 42, 0.98);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .rth-input-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(30, 41, 59, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 12px;
+        padding: 4px 6px 4px 12px;
+        transition: all 0.2s ease;
+      }
+
+      .rth-input-wrapper:focus-within {
+        border-color: #38bdf8;
+        box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+      }
+
+      #rth-chat-input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: #f8fafc;
+        font-size: 12.5px;
+        font-family: inherit;
+      }
+
+      #rth-chat-input::placeholder {
+        color: #64748b;
+        font-size: 11.5px;
+      }
+
+      #rth-send-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #0284c7 0%, #059669 100%);
+        border: none;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 12px;
+      }
+
+      #rth-send-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 2px 10px rgba(2, 132, 199, 0.4);
+      }
+
+      .rth-chat-footer-badge {
+        text-align: center;
+        font-size: 9.5px;
+        color: #64748b;
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+      }
+    </style>
+
+    <!-- Floating Launcher -->
+    <div class="rth-ai-launcher">
+      <div class="rth-ai-badge" id="rth-badge-toggle">
+        <i class="fas fa-sparkles text-amber-300"></i>
+        <span>Tanya AI Gratis</span>
+      </div>
+      <button id="rth-chat-toggle" class="rth-ai-btn" title="Buka Asisten AI RTH">
+        <div class="rth-online-dot"></div>
+        <i class="fas fa-robot text-xl"></i>
+      </button>
+    </div>
+
+    <!-- Jendela Chatbot AI -->
+    <div id="rth-chat-window">
+      <!-- Header -->
+      <div class="rth-chat-header">
+        <div class="flex items-center gap-2.5">
+          <div class="rth-chat-avatar">
+            <i class="fas fa-robot"></i>
+          </div>
+          <div>
+            <div class="font-bold text-white text-[13px] leading-tight flex items-center gap-1.5">
+              <span>Asisten RTH Smart</span>
+              <span class="bg-emerald-500/20 text-emerald-400 text-[9px] px-1.5 py-0.5 rounded font-mono font-normal">GRATIS</span>
+            </div>
+            <div class="text-[10px] text-slate-400">Desa Pugaan • Tabalong Smart City</div>
+          </div>
+        </div>
+        <div class="rth-header-actions flex items-center gap-1">
+          <button id="rth-clear-chat" title="Bersihkan Percakapan"><i class="fas fa-rotate-right text-xs"></i></button>
+          <button id="rth-close-chat" title="Tutup"><i class="fas fa-xmark text-sm"></i></button>
+        </div>
+      </div>
+
+      <!-- Messages List -->
+      <div id="rth-chat-messages">
+        <!-- Welcome Message -->
+        <div class="rth-msg rth-msg-ai">
+          <p>Halo <strong>Pian</strong>! Selamat datang di <strong>RTH Smart Desa Pugaan</strong>. 🌿</p>
+          <p>Ulun asisten virtual siap membantu memberikan informasi seputar fasilitas, jam operasional, WiFi gratis, Cafe BUMDes, lokasi, dan panduan galeri foto.</p>
+          
+          <!-- Quick Chips -->
+          <div class="rth-chips-wrapper">
+            <div class="rth-chips-title">Pertanyaan Cepat:</div>
+            <div class="rth-chips-container">
+              <button class="rth-chip" onclick="askRthAi('Fasilitas apa saja yang ada di RTH Smart Pugaan?')">🌿 Fasilitas RTH</button>
+              <button class="rth-chip" onclick="askRthAi('Kapan jam operasional taman dan Cafe BUMDes?')">🕒 Jam Operasional</button>
+              <button class="rth-chip" onclick="askRthAi('Bagaimana cara akses WiFi gratis di RTH?')">📶 WiFi Gratis</button>
+              <button class="rth-chip" onclick="askRthAi('Apa saja menu dan harga di Cafe BUMDes?')">☕ Menu Cafe</button>
+              <button class="rth-chip" onclick="askRthAi('Dimana lokasi persis RTH Smart Desa Pugaan?')">📍 Lokasi RTH</button>
+              <button class="rth-chip" onclick="askRthAi('Bagaimana cara mengunggah foto ke galeri?')">📸 Unggah Foto</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input Area -->
+      <div class="rth-chat-input-box">
+        <div class="rth-input-wrapper">
+          <input type="text" id="rth-chat-input" placeholder="Tanyakan seputar RTH Smart..." autocomplete="off">
+          <button id="rth-send-btn" title="Kirim Pesan">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+        <div class="rth-chat-footer-badge">
+          <i class="fas fa-bolt text-amber-400"></i>
+          <span>100% Bebas Biaya • AI Virtual Desa Pugaan</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logika JavaScript Multi-Provider Free AI Chatbot -->
+    <script>
+      (function() {
+        const chatToggle = document.getElementById('rth-chat-toggle');
+        const badgeToggle = document.getElementById('rth-badge-toggle');
+        const chatWindow = document.getElementById('rth-chat-window');
+        const closeBtn = document.getElementById('rth-close-chat');
+        const clearBtn = document.getElementById('rth-clear-chat');
+        const sendBtn = document.getElementById('rth-send-btn');
+        const chatInput = document.getElementById('rth-chat-input');
+        const messagesContainer = document.getElementById('rth-chat-messages');
+
+        // URL Backend Google Apps Script (Opsional / Terhubung ke Sheet)
+        const AI_BACKEND_URL = "https://script.google.com/macros/s/AKfycbxsxTao2_2zAF8I_6rF8jQ0_SFCPQrJIjw5_1p7pEH2fqcUsOdheagQtW0y2uR2teIPeQ/exec";
+
+        // Knowledge Base Prompt untuk AI Gratis
+        const SYSTEM_PROMPT = `Anda adalah 'Asisten RTH', asisten virtual cerdas, ramah, santun, dan informatif untuk Ruang Terbuka Hijau (RTH) Smart Desa Pugaan, Kecamatan Pugaan, Kabupaten Tabalong, Kalimantan Selatan.
+Informasi Lengkap RTH Smart Desa Pugaan:
+1. Lokasi: Desa Pugaan, Kecamatan Pugaan, Kabupaten Tabalong, Kalimantan Selatan.
+2. Jam Buka: Kawasan RTH buka 24 JAM GRATIS setiap hari untuk umum. Cafe BUMDes buka pukul 08.00 - 22.00 WITA.
+3. Fasilitas: WiFi publik gratis kecepatan hingga 100 Mbps fiber optic 24 jam tanpa sandi rumit; CCTV pemantau keamanan 24 jam; area bermain anak ramah balita dan higienis; pojok baca literasi digital & buku gratis; gazebo santai dengan colokan stopkontak listrik; taman bunga asri & biopori resapan air; Cafe BUMDes kuliner lokal (Kopi Hitam Pugaan Rp 10.000, Es Jeruk Rp 8.000, camilan kue UMKM mulai Rp 5.000, WA BUMDes: 0857-5349-6613); toilet bersih dan spot foto estetik.
+4. Fitur Web: Buku Tamu online, kotak Kritik & Saran, dan Galeri Foto dokumentasi warga.
+5. Gaya Komunikasi: Sopan, ramah, bersahabat, bahasa Indonesia yang baik, boleh sesekali menyapa dengan kata Banjar sopan seperti 'Ulun' (saya) dan 'Pian' (Anda). Gunakan format ringkas, rapi dengan bullet points bila perlu.`;
+
+        let chatHistory = [
+          { role: "system", content: SYSTEM_PROMPT }
+        ];
+
+        // Buka / Tutup Chat Window
+        function toggleChat() {
+          const isVisible = chatWindow.style.display === 'flex';
+          chatWindow.style.display = isVisible ? 'none' : 'flex';
+          if (!isVisible) {
+            chatInput.focus();
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+          }
+        }
+
+        chatToggle.addEventListener('click', toggleChat);
+        badgeToggle.addEventListener('click', toggleChat);
+        closeBtn.addEventListener('click', () => { chatWindow.style.display = 'none'; });
+
+        // Bersihkan Chat History
+        clearBtn.addEventListener('click', () => {
+          chatHistory = [{ role: "system", content: SYSTEM_PROMPT }];
+          messagesContainer.innerHTML = `
+            <div class="rth-msg rth-msg-ai">
+              <p>Percakapan telah dibersihkan. Halo <strong>Pian</strong>! Ada yang bisa ulun bantu seputar <strong>RTH Smart Desa Pugaan</strong>?</p>
+              <div class="rth-chips-wrapper">
+                <div class="rth-chips-title">Pertanyaan Cepat:</div>
+                <div class="rth-chips-container">
+                  <button class="rth-chip" onclick="askRthAi('Fasilitas apa saja yang ada di RTH Smart Pugaan?')">🌿 Fasilitas RTH</button>
+                  <button class="rth-chip" onclick="askRthAi('Kapan jam operasional taman dan Cafe BUMDes?')">🕒 Jam Operasional</button>
+                  <button class="rth-chip" onclick="askRthAi('Bagaimana cara akses WiFi gratis di RTH?')">📶 WiFi Gratis</button>
+                  <button class="rth-chip" onclick="askRthAi('Apa saja menu dan harga di Cafe BUMDes?')">☕ Menu Cafe</button>
+                  <button class="rth-chip" onclick="askRthAi('Dimana lokasi persis RTH Smart Desa Pugaan?')">📍 Lokasi RTH</button>
+                  <button class="rth-chip" onclick="askRthAi('Bagaimana cara mengunggah foto ke galeri?')">📸 Unggah Foto</button>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        // Helper Format Markdown ke HTML Sederhana
+        function formatMarkdown(text) {
+          if (!text) return "";
+          let html = text
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/\n\n/g, '<br><br>')
+            .replace(/\n/g, '<br>');
+          return html;
+        }
+
+        // Append Message to UI
+        function appendMsg(role, text) {
+          const msgDiv = document.createElement('div');
+          msgDiv.className = role === 'user' ? 'rth-msg rth-msg-user' : 'rth-msg rth-msg-ai';
+          msgDiv.innerHTML = formatMarkdown(text);
+          messagesContainer.appendChild(msgDiv);
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Typing Indicator
+        function showTyping() {
+          const typingDiv = document.createElement('div');
+          typingDiv.id = 'rth-typing-indicator';
+          typingDiv.className = 'rth-typing';
+          typingDiv.innerHTML = '<div class="rth-dot"></div><div class="rth-dot"></div><div class="rth-dot"></div>';
+          messagesContainer.appendChild(typingDiv);
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function hideTyping() {
+          const typingDiv = document.getElementById('rth-typing-indicator');
+          if (typingDiv) typingDiv.remove();
+        }
+
+        // Smart Local Knowledge Engine (100% Free & Offline-Ready Fallback)
+        function getLocalKnowledgeReply(query) {
+          const q = query.toLowerCase();
+          if (q.match(/(fasilitas|fitur|sarana|ada apa|keunggulan)/)) {
+            return "🌿 **Fasilitas Lengkap RTH Smart Desa Pugaan:**\n" +
+              "1. **WiFi Publik Gratis 24 Jam** (Kecepatan hingga 100 Mbps fiber optic).\n" +
+              "2. **CCTV Pemantau AI 24 Jam** terhubung langsung ke pos keamanan desa.\n" +
+              "3. **Taman Bermain Anak** yang aman, higienis, dan ramah balita.\n" +
+              "4. **Pojok Baca & Literasi Digital** (koleksi buku fisik & e-book gratis).\n" +
+              "5. **Gazebo Santai & Stopkontak** untuk tempat santai / kerja tugas.\n" +
+              "6. **Taman Bunga & Biopori Resapan Air** yang asri dan sejuk.\n" +
+              "7. **Cafe BUMDes & Sentra UMKM** dengan kopi khas dan jajanan lokal.\n" +
+              "8. **Toilet Bersih & Spot Foto Instagramable**.";
+          }
+          if (q.match(/(jam|buka|tutup|operasional|waktu|kapan)/)) {
+            return "🕒 **Jam Operasional RTH Smart Desa Pugaan:**\n" +
+              "- **Kawasan Taman RTH:** Buka **24 Jam Setiap Hari** (Gratis untuk umum).\n" +
+              "- **Cafe BUMDes RTH:** Buka pukul **08.00 - 22.00 WITA**.\n" +
+              "Pian dapat berkunjung kapan saja bersama keluarga untuk bersantai, belajar, atau berolahraga.";
+          }
+          if (q.match(/(wifi|internet|kuota|sandi|password|koneksi)/)) {
+            return "📶 **Fasilitas WiFi Gratis RTH Smart:**\n" +
+              "- Internet nirkabel super cepat hingga **100 Mbps** berbasis fiber optic.\n" +
+              "- **100% Gratis 24 Jam** untuk seluruh pengunjung tanpa sandi yang rumit.\n" +
+              "- Sangat cocok untuk mengerjakan tugas sekolah, kuliah, maupun santai browsing.";
+          }
+          if (q.match(/(lokasi|alamat|dimana|tempat|peta|rute|arah)/)) {
+            return "📍 **Lokasi RTH Smart Desa Pugaan:**\n" +
+              "- Terletak di **Desa Pugaan, Kecamatan Pugaan, Kabupaten Tabalong, Kalimantan Selatan**.\n" +
+              "- Mudah dijangkau dan berada di pusat aktivitas masyarakat Pugaan dengan area parkir yang nyaman.";
+          }
+          if (q.match(/(kafe|cafe|kopi|minum|makan|kuliner|menu|harga|bumdes|umkm)/)) {
+            return "☕ **Menu Unggulan Cafe BUMDes RTH:**\n" +
+              "- **Kopi Hitam Pugaan:** Rp 10.000 (Aroma khas racikan Kalimantan)\n" +
+              "- **Es Jeruk Segar:** Rp 8.000 (Perasan jeruk segar asli)\n" +
+              "- **Aneka Camilan UMKM:** Mulai Rp 5.000 (Gorengan renyah & kue tradisional)\n" +
+              "Pemesanan langsung via WhatsApp BUMDes: **0857-5349-6613**.";
+          }
+          if (q.match(/(foto|galeri|unggah|upload|gambar|dokumentasi)/)) {
+            return "📸 **Galeri Dokumentasi Warga:**\n" +
+              "Pian bisa mengabadikan momen di RTH Smart dan mengunggahnya melalui formulir **Unggah Foto Warga** di website ini. Foto akan langsung tersimpan di Google Drive dan tampil di galeri!";
+          }
+          if (q.match(/(buku tamu|kritik|saran|masukan|aspirasi|ulasan)/)) {
+            return "✍️ **Buku Tamu & Kotak Kritik Saran:**\n" +
+              "Silakan sampaikan kesan kunjungan Pian pada formulir **Buku Tamu Digital** atau beri masukan pembangunan di form **Kritik & Saran** pada halaman web ini.";
+          }
+          if (q.match(/(halo|hai|selamat|pagi|siang|sore|malam|assalam|salam|ulun|pian)/)) {
+            return "Halo Pian! Selamat datang di **RTH Smart Desa Pugaan**, Kabupaten Tabalong. Ulun asisten virtual siap membantu informasi seputar fasilitas, jam buka, WiFi gratis, Cafe BUMDes, dan dokumentasi. Ada yang bisa ulun bantu?";
+          }
+          return null;
+        }
+
+        // Mesin AI Gratis Utama (Multi-Tier Architecture)
+        async function getFreeAIResponse(userText) {
+          // Tier 1: Puter.js Free AI Engine (Zero Setup & 100% Free di Browser)
+          if (typeof puter !== 'undefined' && puter.ai) {
+            try {
+              const messages = [...chatHistory, { role: "user", content: userText }];
+              const res = await puter.ai.chat(messages, {
+                model: 'gpt-4o-mini',
+                temperature: 0.4
+              });
+              const replyText = typeof res === 'string' ? res : (res && res.message && res.message.content ? res.message.content : res.toString());
+              if (replyText && replyText.trim() !== '') {
+                return replyText.trim();
+              }
+            } catch (puterErr) {
+              console.warn("Puter.js AI engine fallback:", puterErr);
+            }
+          }
+
+          // Tier 2: Backend Google Apps Script (Gemini 2.0/1.5 Flash Free Tier)
+          if (AI_BACKEND_URL && AI_BACKEND_URL.startsWith('http')) {
+            try {
+              const response = await fetch(AI_BACKEND_URL, {
+                method: 'POST',
+                body: JSON.stringify({ message: userText, action: 'chat' }),
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+              });
+              const data = await response.json();
+              if (data && data.reply && data.status !== 'error') {
+                return data.reply;
+              }
+            } catch (fetchErr) {
+              console.warn("Backend Apps Script fallback:", fetchErr);
+            }
+          }
+
+          // Tier 3: Smart Local Knowledge Engine
+          const localReply = getLocalKnowledgeReply(userText);
+          if (localReply) {
+            return localReply;
+          }
+
+          return "Halo Pian! Ulun Asisten Virtual RTH Smart Desa Pugaan. RTH kami menyediakan fasilitas lengkap: WiFi gratis 24 jam, CCTV keamanan, area bermain anak, pojok baca, gazebo colokan listrik, serta Cafe BUMDes. Ada hal spesifik yang ingin Pian tanyakan seputar fasilitas, jam buka, atau lokasi?";
+        }
+
+        // Handle Send Message
+        async function handleSendMessage(customText) {
+          const text = (customText || chatInput.value).trim();
+          if (!text) return;
+
+          appendMsg('user', text);
+          if (!customText) chatInput.value = '';
+          chatInput.disabled = true;
+          sendBtn.disabled = true;
+
+          showTyping();
+
+          try {
+            const aiReply = await getFreeAIResponse(text);
+            hideTyping();
+            appendMsg('ai', aiReply);
+
+            // Simpan ke riwayat percakapan
+            chatHistory.push({ role: "user", content: text });
+            chatHistory.push({ role: "assistant", content: aiReply });
+            if (chatHistory.length > 15) {
+              chatHistory = [chatHistory[0], ...chatHistory.slice(-10)];
+            }
+          } catch (err) {
+            hideTyping();
+            appendMsg('ai', "Maaf Pian, terjadi sedikit kendala koneksi. Namun Pian tetap bisa menanyakan informasi umum seputar fasilitas, jam buka, WiFi, dan lokasi RTH Smart.");
+          } finally {
+            chatInput.disabled = false;
+            sendBtn.disabled = false;
+            chatInput.focus();
+          }
+        }
+
+        // Global function untuk tombol chip pertanyaan cepat
+        window.askRthAi = function(question) {
+          handleSendMessage(question);
+        };
+
+        sendBtn.addEventListener('click', () => handleSendMessage());
+        chatInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            handleSendMessage();
+          }
+        });
+      })();
+    </script>
 </body>
 </html>
-<!-- ========================================== -->
-<!-- WIDGET CHAT RTH AI (MODERN KLASIK & MINI)   -->
-<!-- ========================================== -->
-
-<!-- Import Font & Ikon -->
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Plus+Jakarta+Sans:wght@500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-<style>
-  /* Wadah Utama di Pojok Kanan Bawah */
-  .rth-classic-container {
-    position: fixed;
-    bottom: 12px;
-    right: 12px;
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-  }
-
-  /* Label "RTH AI" Bergaya Klasik Modern */
-  .rth-classic-badge {
-    background: #ffffff;
-    border: 1px solid #cbd5e1;
-    padding: 2px 6px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  }
-
-  .rth-classic-badge span {
-    font-family: 'Cinzel', serif;
-    font-size: 8px;
-    font-weight: 600;
-    color: #1e293b;
-    letter-spacing: 0.5px;
-  }
-
-  /* Tombol Chat Utama (Sangat Kecil & Elegan: 32px) */
-  .rth-classic-btn {
-    width: 32px;
-    height: 32px;
-    background: #1e293b;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 3px 8px rgba(30, 41, 59, 0.25);
-    cursor: pointer;
-    border: 1px solid #e2e8f0;
-    color: #f8fafc;
-    transition: all 0.2s ease;
-  }
-
-  .rth-classic-btn:hover {
-    background: #0f172a;
-    transform: translateY(-1px);
-  }
-
-  /* Kotak Jendela Chat (Format Klasik Modern: Bersih & Rapi) */
-  #chat-box {
-    position: fixed;
-    bottom: 55px;
-    right: 12px;
-    width: 250px;
-    max-width: 85vw;
-    height: 310px;
-    background: #ffffff;
-    border-radius: 10px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
-    border: 1px solid #e2e8f0;
-    display: none;
-    flex-direction: column;
-    overflow: hidden;
-    z-index: 10000;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-  }
-
-  #chat-box.flex {
-    display: flex;
-  }
-</style>
-
-<!-- Tombol & Label Modern Klasik -->
-<div class="rth-classic-container">
-  
-  <!-- Label Klasik dengan Tangan Menunjuk -->
-  <div class="rth-classic-badge animate-bounce" style="animation-duration: 2s;">
-    <span>RTH AI</span>
-    <i class="fas fa-hand-point-down text-slate-600 text-[9px] animate-pulse"></i>
-  </div>
-
-  <!-- Tombol Mini Bulat Klasik -->
-  <button id="chat-toggle" class="rth-classic-btn">
-    <i class="fas fa-comment-dots text-xs"></i>
-  </button>
-
-</div>
-
-<!-- Kotak Jendela Chat (Gaya Bersih & Elegan) -->
-<div id="chat-box" class="shadow-2xl flex-col">
-  <!-- Header Klasik -->
-  <div class="bg-slate-900 text-white p-2 flex justify-between items-center border-b border-slate-800">
-    <div class="flex items-center gap-1.5">
-      <i class="fas fa-landmark text-teal-400 text-[10px]"></i>
-      <span style="font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.5px;">Asisten RTH</span>
-    </div>
-    <button id="close-chat" class="text-slate-400 hover:text-white transition"><i class="fas fa-times text-xs"></i></button>
-  </div>
-  
-  <!-- Area Pesan -->
-  <div id="chat-content" class="flex-1 p-2 overflow-y-auto flex flex-col gap-1.5 bg-slate-50 text-[11px] text-slate-700">
-    <div class="bg-white border border-slate-200 text-slate-800 p-2 rounded-lg self-start max-w-[85%] shadow-xs">
-      Halo! Ulun asisten virtual RTH Smart Desa Pugaan. Ada yang bisa dibantu?
-    </div>
-  </div>
-  
-  <!-- Area Input Pesan -->
-  <div class="p-1.5 bg-white border-t border-slate-100 flex gap-1">
-    <input type="text" id="chat-input" class="flex-1 bg-slate-100 text-slate-800 placeholder-slate-400 rounded px-2 py-1 text-[10px] focus:outline-none focus:ring-1 focus:ring-slate-400 transition" placeholder="Ketik pertanyaan...">
-    <button id="send-btn" class="bg-slate-900 text-white w-7 rounded hover:bg-slate-800 transition flex items-center justify-center">
-      <i class="fas fa-paper-plane text-[9px]"></i>
-    </button>
-  </div>
-</div>
-
-<!-- Script Logika JavaScript -->
-<script>
-  const chatToggle = document.getElementById('chat-toggle');
-  const chatBox = document.getElementById('chat-box');
-  const closeChat = document.getElementById('close-chat');
-  const sendBtn = document.getElementById('send-btn');
-  const chatInput = document.getElementById('chat-input');
-  const chatContent = document.getElementById('chat-content');
-
-  // URL Backend Google Apps Script Anda
-  const AI_BACKEND_URL = "https://script.google.com/macros/s/AKfycbxsxTao2_2zAF8I_6rF8jQ0_SFCPQrJIjw5_1p7pEH2fqcUsOdheagQtW0y2uR2teIPeQ/exec"; 
-
-  // Buka dan tutup jendela chat
-  chatToggle.addEventListener('click', () => {
-    chatBox.classList.toggle('hidden');
-    chatBox.classList.toggle('flex');
-  });
-
-  closeChat.addEventListener('click', () => {
-    chatBox.classList.add('hidden');
-    chatBox.classList.remove('flex');
-  });
-
-  // Fungsi menambah pesan ke layar
-  function appendMessage(sender, text) {
-    const msgDiv = document.createElement('div');
-    msgDiv.className = sender === 'user' 
-      ? "bg-slate-900 text-white p-2 rounded-lg self-end max-w-[85%] shadow-xs text-[11px]"
-      : "bg-white border border-slate-200 text-slate-800 p-2 rounded-lg self-start max-w-[85%] shadow-xs text-[11px]";
-    msgDiv.innerText = text;
-    chatContent.appendChild(msgDiv);
-    chatContent.scrollTop = chatContent.scrollHeight;
-  }
-
-  // Fungsi kirim pesan ke Apps Script
-  async function sendMessage() {
-    const text = chatInput.value.trim();
-    if (!text) return;
-
-    appendMessage('user', text);
-    chatInput.value = '';
-    
-    // Indikator loading
-    const loadingId = "loading-" + Date.now();
-    const loadingDiv = document.createElement('div');
-    loadingDiv.id = loadingId;
-    loadingDiv.className = "text-slate-400 text-[10px] self-start ml-1 italic";
-    loadingDiv.innerText = "Asisten sedang mengetik...";
-    chatContent.appendChild(loadingDiv);
-    chatContent.scrollTop = chatContent.scrollHeight;
-
-    try {
-      const response = await fetch(AI_BACKEND_URL, {
-        method: 'POST',
-        body: JSON.stringify({ message: text }),
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-      });
-      
-      const data = await response.json();
-      document.getElementById(loadingId).remove();
-      appendMessage('ai', data.reply);
-    } catch (error) {
-      document.getElementById(loadingId).remove();
-      appendMessage('ai', "Error di Website: " + error.message);
-    }
-  }
-
-  // Kirim dengan tombol Enter
-  chatInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') sendMessage();
-  });
-  
-  sendBtn.addEventListener('click', sendMessage);
-</script>
